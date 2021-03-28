@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "815023558275",
+    "project_id": "e-consultent-8e525",
+    "storage_bucket": "e-consultent-8e525.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:815023558275:android:6640eb63697df3f0cdd5b6",
+        "android_client_info": {
+          "package_name": "com.econsultent"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "815023558275-lqclmdsggs3qkb139qgo8k4ksd2ufs5r.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.econsultent",
+            "certificate_hash": "a1312033315720205c7f6e63dd2a3479227fac73"
+          }
+        },
+        {
+          "client_id": "815023558275-8jfigl5rv981f4on1pef07ill41fkq6d.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBIGS4J4jql4ulwGVYY3f6g31qg-uQiylQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "815023558275-8jfigl5rv981f4on1pef07ill41fkq6d.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
