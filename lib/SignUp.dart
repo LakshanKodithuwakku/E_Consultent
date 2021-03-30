@@ -6,7 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:path/path.dart';
+import 'package:path/path.dart' as path;
 
 class SignUp extends StatefulWidget {
   @override
@@ -15,9 +15,7 @@ class SignUp extends StatefulWidget {
 
 class _SignUpState extends State<SignUp> {
 
-//  PickedFile _image;
   File _image;
-//  final ImagePicker _picker = ImagePicker( );
 
   /////////
   final fb = FirebaseDatabase.instance;
@@ -46,10 +44,10 @@ class _SignUpState extends State<SignUp> {
   }
 
   String _id = "";
-  String pathImg = "";
+  String _pathImg = "";
 
   signUp() async {
-    if (_formKey.currentState.validate( )) {
+    if (_formKey.currentState.validate( ) && _image != null) {
       try {
         AuthResult result = await _auth.createUserWithEmailAndPassword(
             email: _email, password: _password );
@@ -62,22 +60,10 @@ class _SignUpState extends State<SignUp> {
           ref.child( 'name' ).set( _name );
           ref.child( 'email' ).set( _email );
 
-          //
-          //upload to firebase storage
-          Future upload(BuildContext context) async {
-            String imageName = basename(_image.path);
-            StorageReference firebaseStorageRef =
-            FirebaseStorage.instance.ref().child(imageName);
-            StorageUploadTask uploadTask = firebaseStorageRef.putFile(_image);
-            StorageTaskSnapshot taskSnapshot = await uploadTask.onComplete;
-            setState(() {});
-          }
-
-//----------------------------------------------
-
-
-//upload to database
-          ref.child("proPic").set(pathImg);
+          //call ProPic upload method
+          upload( context );
+          //ProPic path upload to database
+          ref.child( "proPic" ).set( _pathImg );
 
           UserUpdateInfo updateuser = UserUpdateInfo( );
           updateuser.displayName = _name;
@@ -88,6 +74,10 @@ class _SignUpState extends State<SignUp> {
         showError( e.message );
         print( e );
       }
+    }
+    else {
+      //call propic error
+      showError1();
     }
   }
 
@@ -113,6 +103,28 @@ class _SignUpState extends State<SignUp> {
     );
   }
 
+  //Propic error
+  showError1() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+
+            title: Text( 'ERROR' ),
+            content: Text( 'Set your profile picture!' ),
+
+            actions: <Widget>[
+              FlatButton(
+
+                  onPressed: () {
+                    Navigator.of( context ).pop( );
+                  },
+                  child: Text( 'OK' ) )
+            ],
+          );
+        }
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -147,8 +159,11 @@ class _SignUpState extends State<SignUp> {
                           child: TextFormField(
 
                             validator: (input) {
-                              if (input.isEmpty)
+                              if (input.isEmpty) {
                                 return 'Enter Name';
+                              }else if(input.length<4){
+                                return 'Username should be grater than or equel 4';
+                              }
                             },
 
                             decoration: InputDecoration(
@@ -237,6 +252,7 @@ class _SignUpState extends State<SignUp> {
     );
   }
 
+  //Image selection
   Widget imageProfile() {
     return Stack(
       children: <Widget>[
@@ -267,6 +283,7 @@ class _SignUpState extends State<SignUp> {
     );
   }
 
+  //Popup and selct image
   Widget bottomSheet() {
     return Container(
       height: 100.0,
@@ -313,15 +330,23 @@ class _SignUpState extends State<SignUp> {
 
 //Image Picker methd
   void takePhoto(ImageSource source) async {
-//    final pickedFile = await _picker.getImage
     var image = await ImagePicker.pickImage(
       source: source,
     );
     setState( () {
       _image = image;
-//          pickedFile;
-      pathImg = basename(_image.path);
+      _pathImg = path.basename(_image.path);
     } );
+  }
+
+  //ProPic upload to firebase storage
+  Future upload(BuildContext context) async {
+    String imageName = path.basename(_image.path);
+    StorageReference firebaseStorageRef =
+    FirebaseStorage.instance.ref().child(imageName);
+    StorageUploadTask uploadTask = firebaseStorageRef.putFile(_image);
+    StorageTaskSnapshot taskSnapshot = await uploadTask.onComplete;
+    setState(() {});
   }
 
 }
