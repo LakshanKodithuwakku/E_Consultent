@@ -5,6 +5,9 @@ import 'HomePage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:path/path.dart';
+
 class SignUp extends StatefulWidget {
   @override
   _SignUpState createState() => _SignUpState();
@@ -12,99 +15,107 @@ class SignUp extends StatefulWidget {
 
 class _SignUpState extends State<SignUp> {
 
-  PickedFile _imageFile;
-  final ImagePicker _picker = ImagePicker();
+//  PickedFile _image;
+  File _image;
+//  final ImagePicker _picker = ImagePicker( );
 
   /////////
-   final fb = FirebaseDatabase.instance;
+  final fb = FirebaseDatabase.instance;
   //////
 
   FirebaseAuth _auth = FirebaseAuth.instance;
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>( );
 
   String _name, _email, _password;
 
   checkAuthentication() async {
-
-    _auth.onAuthStateChanged.listen((user) async
+    _auth.onAuthStateChanged.listen( (user) async
     {
-      if(user != null)
-      {
-        Navigator.push(context, MaterialPageRoute(
-
-            builder: (context)=>HomePage()));
+      if (user != null) {
+        Navigator.push( context, MaterialPageRoute(
+            builder: (context) => HomePage( ) ) );
       }
     }
     );
   }
 
   @override
-  void initState(){
-    super.initState();
-    this.checkAuthentication();
+  void initState() {
+    super.initState( );
+    this.checkAuthentication( );
   }
 
-  signUp()async{
-    if(_formKey.currentState.validate())
-    {
-      _formKey.currentState.save();
+  String _id = "";
+  String pathImg = "";
+
+  signUp() async {
+    if (_formKey.currentState.validate( )) {
       try {
-        FirebaseUser user = (await _auth.createUserWithEmailAndPassword(
-            email: _email, password: _password )) as FirebaseUser;
+        AuthResult result = await _auth.createUserWithEmailAndPassword(
+            email: _email, password: _password );
+        FirebaseUser user = result.user;
         if (user != null) {
           ////////
-          final ref = fb.reference().child("Student");
-          FirebaseUser user = await FirebaseAuth.instance.currentUser();
-          ref.child(user.uid).set({
-            "name": _name,
-            "password": _password,
-            "email":_email,
+          _id = user.uid.toString( );
+          print( _id );
+          final ref = fb.reference( ).child( "general_user" ).child( '$_id' );
+          ref.child( 'name' ).set( _name );
+          ref.child( 'email' ).set( _email );
+
+          //
+          //upload to firebase storage
+          Future upload(BuildContext context) async {
+            String imageName = basename(_image.path);
+            StorageReference firebaseStorageRef =
+            FirebaseStorage.instance.ref().child(imageName);
+            StorageUploadTask uploadTask = firebaseStorageRef.putFile(_image);
+            StorageTaskSnapshot taskSnapshot = await uploadTask.onComplete;
+            setState(() {});
           }
-          );
-          ////////
+
+//----------------------------------------------
+
+
+//upload to database
+          ref.child("proPic").set(pathImg);
+
           UserUpdateInfo updateuser = UserUpdateInfo( );
           updateuser.displayName = _name;
           user.updateProfile( updateuser );
-
         }
       }
-      catch(e){
-        showError(e.message);
-        print(e);
+      catch (e) {
+        showError( e.message );
+        print( e );
       }
     }
   }
 
-  showError(String errormessage){
-
+  showError(String errormessage) {
     showDialog(
         context: context,
-        builder: (BuildContext context)
-        {
+        builder: (BuildContext context) {
           return AlertDialog(
 
-            title: Text('ERROR'),
-            content: Text(errormessage),
+            title: Text( 'ERROR' ),
+            content: Text( errormessage ),
 
             actions: <Widget>[
               FlatButton(
 
-                  onPressed: (){
-                    Navigator.of(context).pop();
+                  onPressed: () {
+                    Navigator.of( context ).pop( );
                   },
-                  child: Text('OK'))
+                  child: Text( 'OK' ) )
             ],
           );
         }
     );
-
   }
-
 
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
 
         body: SingleChildScrollView(
@@ -114,10 +125,10 @@ class _SignUpState extends State<SignUp> {
 
               children: <Widget>[
                 SizedBox(
-                    height: 100.0,
+                  height: 100.0,
                 ),
 
-                imageProfile(),
+                imageProfile( ),
                 SizedBox(
                   height: 20,
                 ),
@@ -135,21 +146,20 @@ class _SignUpState extends State<SignUp> {
 
                           child: TextFormField(
 
-                              validator: (input)
-                              {
-                                if(input.isEmpty)
-                                  return 'Enter Name';
-                              },
+                            validator: (input) {
+                              if (input.isEmpty)
+                                return 'Enter Name';
+                            },
 
-                              decoration: InputDecoration(
-                                labelText: 'Name',
-                                prefixIcon:Icon(Icons.person),
-                              ),
+                            decoration: InputDecoration(
+                              labelText: 'Name',
+                              prefixIcon: Icon( Icons.person ),
+                            ),
 
-                             // onSaved: (input) => _name = input
-                      onChanged: (val){
-                      _name=val;
-                },
+                            // onSaved: (input) => _name = input
+                            onChanged: (val) {
+                              _name = val;
+                            },
 
                           ),
                         ),
@@ -158,21 +168,20 @@ class _SignUpState extends State<SignUp> {
 
                           child: TextFormField(
 
-                              validator: (input)
-                              {
-                                if(input.isEmpty)
+                              validator: (input) {
+                                if (input.isEmpty)
                                   return 'Enter Email';
                               },
 
                               decoration: InputDecoration(
                                   labelText: 'Email',
-                                  prefixIcon:Icon(Icons.email)
+                                  prefixIcon: Icon( Icons.email )
                               ),
 
-                             //onSaved: (input) => _email = input
-                            onChanged: (val){
-                            _email=val;
-                            }
+                              //onSaved: (input) => _email = input
+                              onChanged: (val) {
+                                _email = val;
+                              }
                           ),
                         ),
 
@@ -180,15 +189,14 @@ class _SignUpState extends State<SignUp> {
 
                           child: TextFormField(
 
-                              validator: (input)
-                              {
-                                if(input.length < 6)
+                              validator: (input) {
+                                if (input.length < 6)
                                   return 'Provide Minimum 6 Character';
                               },
 
                               decoration: InputDecoration(
                                 labelText: 'Password',
-                                prefixIcon:Icon(Icons.lock),
+                                prefixIcon: Icon( Icons.lock ),
                               ),
                               obscureText: true,
 
@@ -199,12 +207,12 @@ class _SignUpState extends State<SignUp> {
                           ),
                         ),
 
-                        SizedBox(height:20),
+                        SizedBox( height: 20 ),
 
                         RaisedButton(
-                          padding: EdgeInsets.fromLTRB(70,10,70,10),
+                          padding: EdgeInsets.fromLTRB( 70, 10, 70, 10 ),
                           onPressed: signUp,
-                          child: Text('SignUp',style: TextStyle(
+                          child: Text( 'SignUp', style: TextStyle(
                               color: Colors.white,
                               fontSize: 20.0,
                               fontWeight: FontWeight.bold
@@ -212,7 +220,7 @@ class _SignUpState extends State<SignUp> {
                           ),
                           color: Colors.blueAccent,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20.0),
+                            borderRadius: BorderRadius.circular( 20.0 ),
                           ),
                         )
 
@@ -230,45 +238,48 @@ class _SignUpState extends State<SignUp> {
   }
 
   Widget imageProfile() {
-      return Stack(
-        children: <Widget>[
-          CircleAvatar(
-            radius: 80.0,
-            backgroundImage: _imageFile==null
-                ? AssetImage("images/my3.jpg")
-                : FileImage(File(_imageFile.path)),
-          ),
-          Positioned(
-            bottom: 20.0,
-            right: 20.0,
-            child: InkWell(
-              onTap: () {
-                showModalBottomSheet(
-                  context: context,
-                  builder: ((builder) => bottomSheet()),
-                );
-              },
-              child: Icon(
-                Icons.camera_alt,
-                color: Colors.black38,
-                size: 28.0,
-              ),
+    return Stack(
+      children: <Widget>[
+        CircleAvatar(
+          radius: 80.0,
+          backgroundImage: _image == null
+              ? AssetImage( "images/my3.jpg" )
+              : FileImage( File( _image.path ) ),
+        ),
+        Positioned(
+          bottom: 20.0,
+          right: 20.0,
+          child: InkWell(
+            onTap: () {
+              showModalBottomSheet(
+                context: context,
+                builder: ((builder) => bottomSheet( )),
+              );
+            },
+            child: Icon(
+              Icons.camera_alt,
+              color: Colors.black38,
+              size: 28.0,
             ),
           ),
-        ],
-      );
+        ),
+      ],
+    );
   }
 
-  Widget bottomSheet(){
+  Widget bottomSheet() {
     return Container(
       height: 100.0,
-      width: MediaQuery.of(context).size.width,
+       width: MediaQuery
+           .of( context )
+           .size
+           .width,
       margin: EdgeInsets.symmetric(
         horizontal: 20,
         vertical: 20,
       ),
-      child: Column(children: <Widget>[
-        Text("Choose Profile photo",
+      child: Column( children: <Widget>[
+        Text( "Choose Profile photo",
           style: TextStyle(
             fontSize: 20.0,
           ),
@@ -280,18 +291,18 @@ class _SignUpState extends State<SignUp> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             FlatButton.icon(
-              icon: Icon(Icons.camera),
-              onPressed: (){
-                takePhoto(ImageSource.camera);
+              icon: Icon( Icons.camera ),
+              onPressed: () {
+                takePhoto( ImageSource.camera );
               },
-              label: Text("Camera"),
+              label: Text( "Camera" ),
             ),
             FlatButton.icon(
-              icon: Icon(Icons.image),
-              onPressed: (){
-                takePhoto(ImageSource.gallery);
+              icon: Icon( Icons.image ),
+              onPressed: () {
+                takePhoto( ImageSource.gallery );
               },
-              label: Text("Gallery"),
+              label: Text( "Gallery" ),
             ),
           ],
         )
@@ -302,12 +313,15 @@ class _SignUpState extends State<SignUp> {
 
 //Image Picker methd
   void takePhoto(ImageSource source) async {
-    final pickedFile = await _picker.getImage(
+//    final pickedFile = await _picker.getImage
+    var image = await ImagePicker.pickImage(
       source: source,
     );
-    setState((){
-      _imageFile = pickedFile;
-    });
+    setState( () {
+      _image = image;
+//          pickedFile;
+      pathImg = basename(_image.path);
+    } );
   }
 
 }
