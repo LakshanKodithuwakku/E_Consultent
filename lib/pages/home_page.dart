@@ -20,7 +20,8 @@ class _HomePageState extends State<HomePage> {
   List<Category> _categories = List<Category>();
   List<Consultant> _trDoctors = List<Consultant>();
 
-  navigateToRegister()async{
+  //Redirect to logout page
+  navigateToLogout()async{
     Navigator.push(context, MaterialPageRoute(builder: (context)=> LogoutPage()));
   }
 
@@ -80,8 +81,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-
-
   /// **********************************************
   /// WIDGETS
   /// **********************************************
@@ -97,10 +96,7 @@ class _HomePageState extends State<HomePage> {
           CustomIcons.menu,
           size: 14,
         ),
-        onPressed: navigateToRegister,
-        /*()async{
-          Navigator.push(context, MaterialPageRoute(builder: (context)=> HomePage()));
-        },*/
+        onPressed: navigateToLogout,
       ),
       actions: [
         IconButton(
@@ -108,7 +104,9 @@ class _HomePageState extends State<HomePage> {
             CustomIcons.search,
             size: 20,
           ),
-          onPressed: () {},
+          onPressed: () {
+            showSearch(context: context, delegate: DataSearch());
+          },
         ),
       ],
     );
@@ -167,7 +165,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  /// Top Rated Doctors Section
+  /// Top Rated Consultants Section
   Column _trDoctorsSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -285,4 +283,91 @@ class _HomePageState extends State<HomePage> {
     ));
     return trDoctors;
   }
+}
+
+/// **********************************************
+/// Search bar Implimentation
+/// **********************************************
+class DataSearch extends SearchDelegate<String>{
+
+  /// **********************************************
+  /// DUMMY DATA
+  /// **********************************************
+  final cities = [
+    "Medical",
+    "Law",
+    "Business",
+    "Civil engineering"
+  ];
+
+  final recentCities = [
+    "Law",
+    "Business"
+  ];
+
+  @override
+  List<Widget> buildActions(BuildContext context) {
+    // TODO: implement buildActions (actions for app bar)
+    return [IconButton(icon: Icon(Icons.clear),
+        onPressed: () {
+          query = "";
+        })
+    ];
+  }
+
+  @override
+  Widget buildLeading(BuildContext context) {
+    // TODO: implement buildLeading (leading icon on the left of the app bar)
+    return IconButton(
+        icon: AnimatedIcon(
+          icon: AnimatedIcons.menu_arrow,
+          progress: transitionAnimation,
+        ),
+        onPressed: (){
+          close(context, null);
+        });
+  }
+
+  @override
+  Widget buildResults(BuildContext context) {
+    // TODO: implement buildResults (Show some result based on the selection)
+    return Container(
+      height: 100.0,
+      width: 100.0,
+      child: Card(
+        color: Colors.red,
+        child: Center(
+          child: Text(query),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    // TODO: implement buildSuggestions (show when someone searches for something)
+    final suggestionList = query.isEmpty
+        ?recentCities
+        :cities.where((p) => p.startsWith(query)).toList();
+
+    return ListView.builder(
+      itemBuilder: (context,index)=>ListTile(
+        onTap: (){
+          showResults(context);
+        },
+        leading: Icon(Icons.location_city),
+        title: RichText(text: TextSpan(
+            text: suggestionList[index].substring(0,query.length),
+            style: TextStyle(
+                color: Colors.black, fontWeight: FontWeight.bold ),
+            children: [TextSpan(
+                text: suggestionList[index].substring(query.length),
+                style: TextStyle(color: Colors.grey))
+            ]),
+        ),
+      ),
+      itemCount: suggestionList.length,
+    );
+  }
+
 }

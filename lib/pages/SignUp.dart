@@ -104,7 +104,9 @@ class _SignUpState extends State<SignUp> {
     );
   }
 
-  //Propic error
+  /// **********************************************
+  /// Propic error popup
+  /// **********************************************
   showError1() {
     showDialog(
         context: context,
@@ -172,7 +174,6 @@ class _SignUpState extends State<SignUp> {
                               prefixIcon: Icon( Icons.person ),
                             ),
 
-                            // onSaved: (input) => _name = input
                             onChanged: (val) {
                               _name = val;
                             },
@@ -194,7 +195,6 @@ class _SignUpState extends State<SignUp> {
                                   prefixIcon: Icon( Icons.email )
                               ),
 
-                              //onSaved: (input) => _email = input
                               onChanged: (val) {
                                 _email = val;
                               }
@@ -216,7 +216,6 @@ class _SignUpState extends State<SignUp> {
                               ),
                               obscureText: true,
 
-                              //onSaved: (input) => _password = input
                               onChanged: (val) {
                                 _password = val;
                               }
@@ -253,7 +252,9 @@ class _SignUpState extends State<SignUp> {
     );
   }
 
-  //Image selection
+  /// **********************************************
+  /// Image selection
+  /// **********************************************
   Widget imageProfile() {
     return Stack(
       children: <Widget>[
@@ -284,7 +285,9 @@ class _SignUpState extends State<SignUp> {
     );
   }
 
-  //Popup and selct image
+  /// **********************************************
+  /// Image selection method popup
+  /// **********************************************
   Widget bottomSheet() {
     return Container(
       height: 100.0,
@@ -329,7 +332,9 @@ class _SignUpState extends State<SignUp> {
     );
   }
 
-//Image Picker methd
+  /// **********************************************
+  /// Image Picker methd
+  /// **********************************************
   void takePhoto(ImageSource source) async {
     var image = await ImagePicker.pickImage(
       source: source,
@@ -340,7 +345,9 @@ class _SignUpState extends State<SignUp> {
     } );
   }
 
-  //ProPic upload to firebase storage
+  /// **********************************************
+  /// ProPic upload to firebase storage
+  /// **********************************************
   Future upload(BuildContext context) async {
     String imageName = path.basename(_image.path);
     StorageReference firebaseStorageRef =
