@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'HomePage.dart';
+//import 'LogoutPage.dart';
+import 'package:econsultent/pages/home_page.dart';
 
 
 void main() => runApp(MyApp());

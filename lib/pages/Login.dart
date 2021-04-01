@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-//import 'package:authentification/HomePage.dart';
-import 'HomePage.dart';
+//import 'package:authentification/LogoutPage.dart';
+import 'LogoutPage.dart';
 import 'SignUp.dart';
 
 class Login extends StatefulWidget {
@@ -28,7 +28,7 @@ class _LoginState extends State<Login> {
 
         Navigator.push(context, MaterialPageRoute(
 
-            builder: (context)=>HomePage()));
+            builder: (context)=>LogoutPage()));
       }
 
     });

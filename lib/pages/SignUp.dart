@@ -1,9 +1,10 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'HomePage.dart';
+//import 'LogoutPage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:econsultent/pages/home_page.dart';
 
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:path/path.dart' as path;

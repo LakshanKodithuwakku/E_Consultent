@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 //import 'package:authentification/Start.dart';
 import 'Start.dart';
 
-class HomePage extends StatefulWidget {
+class LogoutPage extends StatefulWidget {
   @override
-  _HomePageState createState() => _HomePageState();
+  _LogoutPageState createState() => _LogoutPageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _LogoutPageState extends State<LogoutPage> {
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   FirebaseUser user;
