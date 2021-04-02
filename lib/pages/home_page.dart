@@ -9,16 +9,50 @@ import 'package:econsultent/utils/my_flutter_app_icons.dart';
 import 'package:econsultent/utils/he_color.dart';
 import 'package:flutter/material.dart';
 import 'package:econsultent/pages/LogoutPage.dart';
+import 'package:econsultent/pages/EditProfile.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:econsultent/pages/Start.dart';
 
 class HomePage extends StatefulWidget {
   @override
   _HomePageState createState() => _HomePageState();
 }
 
+/// ***********************************
+/// Dropdown menu Constants
+/// ***********************************
+class Constants{
+  static const String EditProfile = 'Edit Profile';
+  static const String SignOut = 'SignOut';
+
+  static const List<String> choices = <String>[
+    EditProfile,
+    SignOut
+  ];
+}
+
 class _HomePageState extends State<HomePage> {
   List<Consultant> _hDoctors = List<Consultant>();
   List<Category> _categories = List<Category>();
   List<Consultant> _trDoctors = List<Consultant>();
+
+//**************************************************
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  FirebaseUser user;
+  bool isloggedin= false;
+
+  checkAuthentification() async{
+
+    _auth.onAuthStateChanged.listen((user) {
+
+      if(user ==null)
+      {
+        Navigator.push(context, MaterialPageRoute(builder: (context)=> Start()));
+      }
+    });
+  }
+
+  //**************************************************
 
   //Redirect to logout page
   navigateToLogout()async{
@@ -47,6 +81,7 @@ class _HomePageState extends State<HomePage> {
     _hDoctors = _getHDoctors();
     _categories = _getCategories();
     _trDoctors = _getTRDoctors();
+    this.checkAuthentification();
   }
 
   @override
@@ -91,13 +126,22 @@ class _HomePageState extends State<HomePage> {
       elevation: 0,
       brightness: Brightness.light,
       iconTheme: IconThemeData(color: HexColor('#150047')),
-      leading: IconButton(
-        icon: Icon(
-          CustomIcons.menu,
-          size: 14,
-        ),
-        onPressed: navigateToLogout,
+
+      /// ***********************************
+      /// Dropdown menu
+      /// ***********************************
+      leading: PopupMenuButton<String>(
+        onSelected: choiceAction,
+        itemBuilder: (BuildContext context){
+          return Constants.choices.map((String choice) {
+            return PopupMenuItem<String>(
+              value: choice,
+              child: Text(choice),
+            );
+          }).toList();
+        },
       ),
+
       actions: [
         IconButton(
           icon: Icon(
@@ -110,6 +154,19 @@ class _HomePageState extends State<HomePage> {
         ),
       ],
     );
+  }
+
+  /// ***********************************
+  /// Dropdown menu choice action
+  /// ***********************************
+  void choiceAction(String choice) {
+    if (choice == Constants.EditProfile) {
+      Navigator.push(
+          context, MaterialPageRoute( builder: (context) => EditProfile( ) ) );
+    } else if (choice == Constants.SignOut) {
+      Navigator.push(
+          context, MaterialPageRoute( builder: (context) => LogoutPage( ) ) );
+    }
   }
 
   /// Highlighted Doctors Section

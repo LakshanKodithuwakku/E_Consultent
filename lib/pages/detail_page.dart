@@ -109,7 +109,7 @@ class _DetailPageState extends State<DetailPage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        DetailCell(title: '162', subTitle: 'Patients'),
+                        DetailCell(title: '162', subTitle: 'Clients'),
                         DetailCell(title: '4+', subTitle: 'Exp. Years'),
                         DetailCell(title: '4273', subTitle: 'Rating'),
                       ],

@@ -1,155 +1,47 @@
-import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
 import 'package:econsultent/pages/home_page.dart';
-import 'package:econsultent/pages/Start.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:path/path.dart' as path;
+import 'dart:io';
+//import 'package:firebase_storage/firebase_storage.dart';
+//import 'package:path/path.dart' as path;
 
-class SignUp extends StatefulWidget {
+class EditProfile extends StatefulWidget {
   @override
-  _SignUpState createState() => _SignUpState();
+  _EditProfileState createState() => _EditProfileState();
 }
 
-class _SignUpState extends State<SignUp> {
+class _EditProfileState extends State<EditProfile> {
 
   File _image;
-
-  /////////
-  final fb = FirebaseDatabase.instance;
-  //////
-
-  FirebaseAuth _auth = FirebaseAuth.instance;
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>( );
-
   String _name, _email, _password;
 
-  checkAuthentication() async {
-    _auth.onAuthStateChanged.listen( (user) async
-    {
-      if (user != null) {
-        Navigator.push( context, MaterialPageRoute(
-            builder: (context) => HomePage( ) ) );
-      }
-    }
-    );
-  }
-
-  @override
-  void initState() {
-    super.initState( );
-    this.checkAuthentication( );
-  }
-
-  String _id = "";
-  String _pathImg = "";
-
-  signUp() async {
-    if (_formKey.currentState.validate( ) && _image != null) {
-      try {
-        AuthResult result = await _auth.createUserWithEmailAndPassword(
-            email: _email, password: _password );
-        FirebaseUser user = result.user;
-        if (user != null) {
-          ////////
-          _id = user.uid.toString( );
-          print( _id );
-          final ref = fb.reference( ).child( "general_user" ).child( '$_id' );
-          ref.child( 'name' ).set( _name );
-          ref.child( 'email' ).set( _email );
-
-          //call ProPic upload method
-          upload( context );
-          //ProPic path upload to database
-          ref.child( "proPic" ).set( _pathImg );
-
-          UserUpdateInfo updateuser = UserUpdateInfo( );
-          updateuser.displayName = _name;
-          user.updateProfile( updateuser );
-        }
-      }
-      catch (e) {
-        showError( e.message );
-        print( e );
-      }
-    }
-    else {
-      //call propic error
-      showError1();
-    }
-  }
-
-  showError(String errormessage) {
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-
-            title: Text( 'ERROR' ),
-            content: Text( errormessage ),
-
-            actions: <Widget>[
-              FlatButton(
-
-                  onPressed: () {
-                    Navigator.of( context ).pop( );
-                  },
-                  child: Text( 'OK' ) )
-            ],
-          );
-        }
-    );
-  }
-
-  /// **********************************************
-  /// Propic error popup
-  /// **********************************************
-  showError1() {
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-
-            title: Text( 'ERROR' ),
-            content: Text( 'Set your profile picture!' ),
-
-            actions: <Widget>[
-              FlatButton(
-
-                  onPressed: () {
-                    Navigator.of( context ).pop( );
-                  },
-                  child: Text( 'OK' ) )
-            ],
-          );
-        }
-    );
-  }
-
+  /// *****************************************
+  /// Page Body
+  /// *****************************************
   @override
   Widget build(BuildContext context) {
     return Scaffold(
 
-        appBar: AppBar(
+        appBar: AppBar(title: Text("Edit Profile"),centerTitle: true,
           leading: IconButton(
             icon: Icon(
                 Icons.arrow_back
             ),
             onPressed: (){
-              Navigator.push(context, MaterialPageRoute(builder: (context)=> Start()));
+              Navigator.push(context, MaterialPageRoute(builder: (context)=> HomePage()));
             },
           ),),
 
         body: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
           child: Container(
 
             child: Column(
 
               children: <Widget>[
                 SizedBox(
-                  height: 100.0,
+                  height: 70.0,
                 ),
 
                 imageProfile( ),
@@ -161,7 +53,6 @@ class _SignUpState extends State<SignUp> {
 
                   child: Form(
 
-                    key: _formKey,
                     child: Column(
 
                       children: <Widget>[
@@ -180,9 +71,11 @@ class _SignUpState extends State<SignUp> {
 
                             decoration: InputDecoration(
                               labelText: 'Name',
+                              hintText: 'Lakshan',
                               prefixIcon: Icon( Icons.person ),
                             ),
 
+                            // onSaved: (input) => _name = input
                             onChanged: (val) {
                               _name = val;
                             },
@@ -204,6 +97,7 @@ class _SignUpState extends State<SignUp> {
                                   prefixIcon: Icon( Icons.email )
                               ),
 
+                              //onSaved: (input) => _email = input
                               onChanged: (val) {
                                 _email = val;
                               }
@@ -225,27 +119,21 @@ class _SignUpState extends State<SignUp> {
                               ),
                               obscureText: true,
 
+                              //onSaved: (input) => _password = input
                               onChanged: (val) {
                                 _password = val;
                               }
                           ),
                         ),
 
-                        SizedBox( height: 20 ),
+                        SizedBox( height: 70 ),
 
-                        RaisedButton(
-                          padding: EdgeInsets.fromLTRB( 70, 10, 70, 10 ),
-                          onPressed: signUp,
-                          child: Text( 'SignUp', style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 20.0,
-                              fontWeight: FontWeight.bold
-                          )
-                          ),
-                          color: Colors.blueAccent,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular( 20.0 ),
-                          ),
+                        Row(mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            CancelButton(),
+                            SizedBox(width: 20,),
+                            SaveButton(),
+                          ],
                         )
 
                       ],
@@ -259,11 +147,57 @@ class _SignUpState extends State<SignUp> {
         )
 
     );
+
   }
 
-  /// **********************************************
-  /// Image selection
-  /// **********************************************
+  /// *****************************************
+  /// Save Button
+  /// *****************************************
+  Widget SaveButton(){
+    return FlatButton(
+      padding: EdgeInsets.only(left:45,right:45),
+
+      onPressed: (){
+
+      },
+      child: Text( 'SAVE', style: TextStyle(
+          color: Colors.white,
+          fontSize: 20.0,
+          fontWeight: FontWeight.bold
+      )
+      ),
+      color: Colors.blueAccent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular( 20.0 ),
+      ),
+    );
+  }
+
+  /// *****************************************
+  /// Cancel Button
+  /// *****************************************
+  Widget CancelButton(){
+   return FlatButton(
+      padding: EdgeInsets.only(left:35,right:35),
+      onPressed: (){
+        Navigator.push(context, MaterialPageRoute(builder: (context)=> HomePage()));
+      },
+      child: Text( 'CANCEL', style: TextStyle(
+          color: Colors.white,
+          fontSize: 20.0,
+          fontWeight: FontWeight.bold
+      )
+      ),
+      color: Colors.blueAccent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular( 20.0 ),
+      ),
+    );
+  }
+
+  /// *****************************************
+  /// Profile Pic
+  /// *****************************************
   Widget imageProfile() {
     return Stack(
       children: <Widget>[
@@ -294,16 +228,16 @@ class _SignUpState extends State<SignUp> {
     );
   }
 
-  /// **********************************************
-  /// Image selection method popup
-  /// **********************************************
+  /// *****************************************
+  /// Image select method popup
+  /// *****************************************
   Widget bottomSheet() {
     return Container(
       height: 100.0,
-       width: MediaQuery
-           .of( context )
-           .size
-           .width,
+      width: MediaQuery
+          .of( context )
+          .size
+          .width,
       margin: EdgeInsets.symmetric(
         horizontal: 20,
         vertical: 20,
@@ -341,29 +275,17 @@ class _SignUpState extends State<SignUp> {
     );
   }
 
-  /// **********************************************
-  /// Image Picker methd
-  /// **********************************************
+  /// *****************************************
+  /// Image Picker method
+  /// *****************************************
   void takePhoto(ImageSource source) async {
     var image = await ImagePicker.pickImage(
       source: source,
     );
     setState( () {
       _image = image;
-      _pathImg = path.basename(_image.path);
+      //_pathImg = path.basename(_image.path);
     } );
-  }
-
-  /// **********************************************
-  /// ProPic upload to firebase storage
-  /// **********************************************
-  Future upload(BuildContext context) async {
-    String imageName = path.basename(_image.path);
-    StorageReference firebaseStorageRef =
-    FirebaseStorage.instance.ref().child(imageName);
-    StorageUploadTask uploadTask = firebaseStorageRef.putFile(_image);
-    StorageTaskSnapshot taskSnapshot = await uploadTask.onComplete;
-    setState(() {});
   }
 
 }
