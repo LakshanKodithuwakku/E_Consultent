@@ -8,7 +8,6 @@ import 'package:econsultent/utils/custom_icons_icons.dart';
 import 'package:econsultent/utils/my_flutter_app_icons.dart';
 import 'package:econsultent/utils/he_color.dart';
 import 'package:flutter/material.dart';
-import 'package:econsultent/pages/LogoutPage.dart';
 import 'package:econsultent/pages/EditProfile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:econsultent/pages/Start.dart';
@@ -52,12 +51,14 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+
+  //
+  signOut()async{
+    _auth.signOut();
+  }
+
   //**************************************************
 
-  //Redirect to logout page
-  navigateToLogout()async{
-    Navigator.push(context, MaterialPageRoute(builder: (context)=> LogoutPage()));
-  }
 
   /// **********************************************
   /// ACTIONS
@@ -164,8 +165,7 @@ class _HomePageState extends State<HomePage> {
       Navigator.push(
           context, MaterialPageRoute( builder: (context) => EditProfile( ) ) );
     } else if (choice == Constants.SignOut) {
-      Navigator.push(
-          context, MaterialPageRoute( builder: (context) => LogoutPage( ) ) );
+      signOut();
     }
   }
 
