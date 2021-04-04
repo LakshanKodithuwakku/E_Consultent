@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:econsultent/pages/home_page.dart';
+import 'package:econsultent/pages/paymentHome.dart';
+import 'package:econsultent/pages/existing-cards.dart';
+
 
 class MyDropDown extends StatefulWidget {
   @override
@@ -12,6 +15,10 @@ class _MyDropDownState extends State<MyDropDown>{
 
   String selectedtype = "Video";
   String selectedduration = "Quick solution";
+  double p1=200;
+  double p2=100;
+  double p3=50;
+  String price= '200';
 
   /// **********************************************
   /// PAGE BODY
@@ -36,7 +43,7 @@ class _MyDropDownState extends State<MyDropDown>{
                   SizedBox(height: 50,),
                   Duration (),
                   SizedBox(height: 50,),
-                  Text(selectedtype, style: TextStyle(fontSize: 36, fontWeight: FontWeight.w900),),
+                  Text("Rs: "+price, style: TextStyle(fontSize: 36, fontWeight: FontWeight.w900),),
                   SizedBox(height: 50,),
                   button(),
                 ],
@@ -66,6 +73,47 @@ class _MyDropDownState extends State<MyDropDown>{
   }
 
   /// **********************************************
+  /// PRICE CALCULATOR
+  /// **********************************************
+  Widget Pricegenarate(){
+    switch (selectedtype){
+      case 'Video':
+        {
+          if (selectedduration == 'Quick solution') {
+            price = p1.toString( );
+          } else if (selectedduration == 'One hour') {
+            price = (p1*1.5).toString( );
+          } else if (selectedduration == 'Scheduled day') {
+            price = (p1*2).toString( );
+          }
+        }
+        break;
+      case 'Audio':
+        {
+          if (selectedduration == 'Quick solution') {
+            price = p2.toString( );
+          } else if (selectedduration == 'One hour') {
+            price = (p2*1.5).toString( );
+          } else if (selectedduration == 'Scheduled day') {
+            price = (p2*2).toString( );
+          }
+        }
+        break;
+      case 'Text chat':
+        {
+          if (selectedduration == 'Quick solution') {
+            price = p3.toString( );
+          } else if (selectedduration == 'One hour') {
+            price = (p3*1.5).toString( );
+          } else if (selectedduration == 'Scheduled day') {
+            price = (p3*2).toString( );
+          }
+        }
+        break;
+    }
+  }
+
+  /// **********************************************
   /// CONFERENCE TYPE
   /// **********************************************
   Widget ConferenceType (){
@@ -85,6 +133,7 @@ class _MyDropDownState extends State<MyDropDown>{
           onChanged: (value){
             setState(() {
               selectedtype = value;
+              Pricegenarate();
             });
           },
           items: type.map<DropdownMenuItem<String>>((value){
@@ -118,6 +167,7 @@ class _MyDropDownState extends State<MyDropDown>{
             onChanged: (value){
               setState(() {
                 selectedduration = value;
+                Pricegenarate();
               });
             },
             items: duration.map<DropdownMenuItem<String>>((value){
@@ -148,9 +198,9 @@ class _MyDropDownState extends State<MyDropDown>{
         SizedBox(height: 30,),
         InkWell(
 
-          /// Add to database
+          /// Add to database and redirect payment
           onTap: () => {
-
+            Navigator.push(context, MaterialPageRoute(builder: (context)=> PaymentPage(),)),
           },
 
           child: Container(

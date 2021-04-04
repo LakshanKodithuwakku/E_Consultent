@@ -6,6 +6,8 @@ import 'dart:io';
 //import 'package:firebase_storage/firebase_storage.dart';
 //import 'package:path/path.dart' as path;
 
+import 'package:firebase_auth/firebase_auth.dart';
+
 class EditProfile extends StatefulWidget {
   @override
   _EditProfileState createState() => _EditProfileState();
@@ -15,6 +17,33 @@ class _EditProfileState extends State<EditProfile> {
 
   File _image;
   String _name, _email, _password;
+
+
+  ///**************************************************************************************
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  FirebaseUser user;
+  bool isloggedin= false;
+
+  getUser() async{
+    FirebaseUser firebaseUser = await _auth.currentUser();
+    await firebaseUser?.reload();
+    firebaseUser = await _auth.currentUser();
+
+    if(firebaseUser !=null)
+    {
+      setState(() {
+        this.user =firebaseUser;
+        this.isloggedin=true;
+      });
+    }
+  }
+
+  @override
+  void initState(){
+    super.initState();
+    this.getUser();
+  }
+  ///**************************************************************************************
 
   /// *****************************************
   /// Page Body
@@ -70,8 +99,7 @@ class _EditProfileState extends State<EditProfile> {
                             },
 
                             decoration: InputDecoration(
-                              labelText: 'Name',
-                              hintText: 'Lakshan',
+                              labelText: "${user.displayName}",
                               prefixIcon: Icon( Icons.person ),
                             ),
 
@@ -93,7 +121,7 @@ class _EditProfileState extends State<EditProfile> {
                               },
 
                               decoration: InputDecoration(
-                                  labelText: 'Email',
+                                  labelText: "${user.email}",
                                   prefixIcon: Icon( Icons.email )
                               ),
 

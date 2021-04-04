@@ -1,16 +1,70 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class RatingsPage extends StatefulWidget {
   @override
   _RatingsPage createState() => _RatingsPage();
 }
 
-/// **************************************
-/// Rating Page arrangement
-/// **************************************
 class _RatingsPage extends State<RatingsPage>{
-  int _rating;
 
+  /// **************************************
+  /// GET GENERAL USER DETAILS
+  /// **************************************
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  FirebaseUser user;
+  getUser() async {
+    FirebaseUser firebaseUser = await _auth.currentUser( );
+    await firebaseUser?.reload( );
+    firebaseUser = await _auth.currentUser( );
+
+    if (firebaseUser != null) {
+      setState( () {
+        this.user = firebaseUser;
+        print("lk");
+      } );
+    }
+  }
+
+  @override
+  void initState(){
+    super.initState();
+    this.getUser();
+  }
+  /// *****GET GENERAL USER DETAILS*******
+
+  int _rating,_no=1;
+  String  _text;
+  String _consultentId = "2apJ7C4ef8ZQGkJmLC0m5N1lhgX4";
+
+  /// ******************************************************
+  /// SEND TO DATABASE
+  /// ******************************************************
+  final FirebaseDatabase database = FirebaseDatabase.instance;
+  void _incrementCounter(){
+    if(_consultentId=="nH5C9hnn51P3fXK09iOLpHSNQ9y2"){
+      _no=_no+1;
+    }
+        database.reference().child("Reviews").
+        child(_consultentId).child(_no.toString()).set({
+          "name" : "${user.displayName}",
+          "rating" : _currentRating,
+          'text' : _text,
+        });
+
+    setState(() {
+      database.reference().child("Reviews").once().then((DataSnapshot snapshot){
+        Map<dynamic, dynamic> data = snapshot.value;
+        print("Value: $data");
+      });
+    });
+  }
+  /// ****************SEND TO DATABASE*****************
+
+  /// ******************************************************
+  /// PAGE BODY
+  /// ******************************************************
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -47,6 +101,7 @@ class _RatingsPage extends State<RatingsPage>{
       ),
     );
   }
+  /// **************PAGE BODY***************************
 
   /// **************************************
   /// Comment box
@@ -71,8 +126,12 @@ class _RatingsPage extends State<RatingsPage>{
         helperText: "You can place the description of the consultant",
         hintText: "Place your experience!",
       ),
+      onChanged: (val){
+        _text = val;
+      },
     );
   }
+  /// *********Comment box****************
 
   /// **************************************
   /// Submit button
@@ -93,7 +152,8 @@ class _RatingsPage extends State<RatingsPage>{
 
           /// Add to database
           onTap: () => {
-
+            _incrementCounter(),
+            getUser(),
           },
 
           child: Container(
@@ -116,6 +176,10 @@ class _RatingsPage extends State<RatingsPage>{
   }
 
 }
+/// ************Submit button*************
+
+/// GLOBEL VERIABLE
+int _currentRating = 0;
 
 /// **************************************
 /// Star rating implementation
@@ -132,8 +196,6 @@ class Rating extends StatefulWidget {
 }
 
 class _Rating extends State<Rating>{
-
-  int _currentRating = 0;
 
   Widget _buildRatingStar(int index){
 
@@ -166,3 +228,4 @@ class _Rating extends State<Rating>{
     return _buildBody();
   }
 }
+/// *******Star rating implementation*****

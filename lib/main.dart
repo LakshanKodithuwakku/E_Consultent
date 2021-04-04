@@ -1,3 +1,4 @@
+import 'package:econsultent/pages/Rating.dart';
 import 'package:flutter/material.dart';
 import 'package:econsultent/pages/home_page.dart';
 
@@ -13,7 +14,8 @@ class MyApp extends StatelessWidget {
       ),
       debugShowCheckedModeBanner: false,
       home: HomePage(),
-
+      //RatingsPage(),
+      
     );
   }
 }
