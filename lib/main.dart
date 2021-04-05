@@ -13,9 +13,10 @@ class MyApp extends StatelessWidget {
           primaryColor: Colors.blueAccent
       ),
       debugShowCheckedModeBanner: false,
-      home: HomePage(),
+      home:
+      HomePage(),
       //RatingsPage(),
-      
+
     );
   }
 }

@@ -4,6 +4,8 @@ import 'package:progress_dialog/progress_dialog.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 
+import 'existing-cards.dart';
+
 class PaymentPage extends StatefulWidget {
   PaymentPage({Key key}) : super(key: key);
 
@@ -46,7 +48,8 @@ class PaymentPageState extends State<PaymentPage> {
         payViaNewCard(context);
         break;
       case 1:
-        Navigator.pushNamed(context, '/existing-cards');
+       // Navigator.pushNamed(context, '/existing-cards');
+        Navigator.push(context, MaterialPageRoute(builder: (context)=> ExistingCardsPage()));
         break;
     }
   }

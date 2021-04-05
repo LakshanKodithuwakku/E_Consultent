@@ -1,7 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:econsultent/pages/home_page.dart';
 import 'package:econsultent/pages/paymentHome.dart';
-import 'package:econsultent/pages/existing-cards.dart';
 
 
 class MyDropDown extends StatefulWidget {
@@ -54,6 +55,7 @@ class _MyDropDownState extends State<MyDropDown>{
         ),
     );
   }
+  /// ***************PAGE BODY**********************
 
   /// **********************************************
   /// APP BAR
@@ -200,6 +202,7 @@ class _MyDropDownState extends State<MyDropDown>{
 
           /// Add to database and redirect payment
           onTap: () => {
+            _savePrice(),
             Navigator.push(context, MaterialPageRoute(builder: (context)=> PaymentPage(),)),
           },
 
@@ -221,4 +224,56 @@ class _MyDropDownState extends State<MyDropDown>{
       ],
     );
   }
+
+  /// ******************************************************
+  /// RETRIEVE CLIENT ID
+  /// ******************************************************
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  FirebaseUser user;
+
+  getUser() async{
+    FirebaseUser firebaseUser = await _auth.currentUser();
+    await firebaseUser?.reload();
+    firebaseUser = await _auth.currentUser();
+
+    if(firebaseUser !=null)
+    {
+      setState(() {
+        this.user =firebaseUser;
+      });
+    }
+  }
+
+  @override
+  void initState(){
+    this.getUser();
+  }
+  ///*********RETRIEVE CLIENT ID****************************
+
+  /// ******************************************************
+  /// SEND TO DATABASE
+  /// ******************************************************
+  String _consultentId = "2apJ7C4ef8ZQGkJmLC0m5N1IhgX2";
+  int _no=1;
+
+  final FirebaseDatabase database = FirebaseDatabase.instance;
+  void _savePrice(){
+    if(_consultentId=="2apJ7C4ef8ZQGkJmLC0m5N1IhgX2"){
+      _no=_no+1;
+    }
+    database.reference().child("Client").
+    child("${user.uid}").child("booking").child(_no.toString()).set({
+      "amount" : price,
+      "clientID" : "${user.uid}",
+      'consultantID' : _consultentId,
+    });
+
+    setState(() {
+      database.reference().child("Client").once().then((DataSnapshot snapshot){
+        Map<dynamic, dynamic> data = snapshot.value;
+        print("Value: $data");
+      });
+    });
+  }
+/// ****************SEND TO DATABASE*****************
 }

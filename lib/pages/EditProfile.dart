@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:econsultent/pages/home_page.dart';
 import 'dart:io';
+import 'package:firebase_database/firebase_database.dart';
 //import 'package:firebase_storage/firebase_storage.dart';
 //import 'package:path/path.dart' as path;
 
@@ -22,7 +23,7 @@ class _EditProfileState extends State<EditProfile> {
   ///**************************************************************************************
   final FirebaseAuth _auth = FirebaseAuth.instance;
   FirebaseUser user;
-  bool isloggedin= false;
+  //bool isloggedin= false;
 
   getUser() async{
     FirebaseUser firebaseUser = await _auth.currentUser();
@@ -33,17 +34,37 @@ class _EditProfileState extends State<EditProfile> {
     {
       setState(() {
         this.user =firebaseUser;
-        this.isloggedin=true;
+       // this.isloggedin=true;
       });
     }
   }
 
   @override
   void initState(){
-    super.initState();
+   // super.initState();
     this.getUser();
   }
   ///**************************************************************************************
+
+  /// ******************************************************
+  /// SEND TO DATABASE
+  /// ******************************************************
+  final FirebaseDatabase database = FirebaseDatabase.instance;
+  void _userUpdate(){
+    database.reference().child("general_user").
+    child("${user.uid}").set({
+      "email" : "${user.email}",
+      "name" : _name,
+    });
+
+    setState(() {
+      database.reference().child("general_user").once().then((DataSnapshot snapshot){
+        Map<dynamic, dynamic> data = snapshot.value;
+        print("Value: $data");
+      });
+    });
+  }
+  /// ****************SEND TO DATABASE*****************
 
   /// *****************************************
   /// Page Body
@@ -103,32 +124,10 @@ class _EditProfileState extends State<EditProfile> {
                               prefixIcon: Icon( Icons.person ),
                             ),
 
-                            // onSaved: (input) => _name = input
                             onChanged: (val) {
                               _name = val;
                             },
 
-                          ),
-                        ),
-
-                        Container(
-
-                          child: TextFormField(
-
-                              validator: (input) {
-                                if (input.isEmpty)
-                                  return 'Enter Email';
-                              },
-
-                              decoration: InputDecoration(
-                                  labelText: "${user.email}",
-                                  prefixIcon: Icon( Icons.email )
-                              ),
-
-                              //onSaved: (input) => _email = input
-                              onChanged: (val) {
-                                _email = val;
-                              }
                           ),
                         ),
 
@@ -147,7 +146,6 @@ class _EditProfileState extends State<EditProfile> {
                               ),
                               obscureText: true,
 
-                              //onSaved: (input) => _password = input
                               onChanged: (val) {
                                 _password = val;
                               }
@@ -186,7 +184,8 @@ class _EditProfileState extends State<EditProfile> {
       padding: EdgeInsets.only(left:45,right:45),
 
       onPressed: (){
-
+        _userUpdate();
+        Navigator.push(context, MaterialPageRoute(builder: (context)=> HomePage()));
       },
       child: Text( 'SAVE', style: TextStyle(
           color: Colors.white,

@@ -4,6 +4,7 @@ import 'package:econsultent/utils/custom_icons_icons.dart';
 import 'package:econsultent/utils/he_color.dart';
 import 'package:flutter/material.dart';
 import 'package:econsultent/pages/Booking.dart';
+import 'package:econsultent/pages/Rating.dart';
 
 class DetailPage extends StatefulWidget {
   final Consultant consultant;
@@ -20,9 +21,11 @@ class DetailPage extends StatefulWidget {
 class Constants{
   static const String Booking = 'Booking';
   static const String Report = 'Report';
+  static const String GiveReview = 'GiveReview';
 
   static const List<String> choices = <String>[
     Booking,
+    GiveReview,
     Report
   ];
 }
@@ -194,6 +197,8 @@ class _DetailPageState extends State<DetailPage> {
       Navigator.push(context, MaterialPageRoute(builder: (context)=> MyDropDown()));
     }else if(choice == Constants.Report){
        _showMultiSelect(context);
+    }else if(choice == Constants.GiveReview){
+      Navigator.push(context, MaterialPageRoute(builder: (context)=> RatingsPage()));
     }
   }
 
