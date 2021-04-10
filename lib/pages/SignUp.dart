@@ -1,12 +1,15 @@
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import 'package:econsultent/pages/home_page.dart';
+//import 'package:econsultent/pages/home_page.dart';
+import 'package:econsultent/pages/Home.dart';
 import 'package:econsultent/pages/Start.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:path/path.dart' as path;
+//import 'package:econsultent/pages/verify.dart';
 
 class SignUp extends StatefulWidget {
   @override
@@ -23,15 +26,26 @@ class _SignUpState extends State<SignUp> {
 
   FirebaseAuth _auth = FirebaseAuth.instance;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>( );
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
 
-  String _name, _email, _password;
+  @override
+  void dispose() {
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+
+  String _name, _email, _password, NIC, password;
 
   checkAuthentication() async {
     _auth.onAuthStateChanged.listen( (user) async
     {
       if (user != null) {
         Navigator.push( context, MaterialPageRoute(
-            builder: (context) => HomePage( ) ) );
+            builder: (context) => //VerifyScreen()));
+                HomePage( ) ) );
       }
     }
     );
@@ -47,7 +61,7 @@ class _SignUpState extends State<SignUp> {
   String _pathImg = "";
 
   signUp() async {
-    if (_formKey.currentState.validate( ) && _image != null) {
+    if (_formKey.currentState.validate( ) && _image != null ) {
       try {
         AuthResult result = await _auth.createUserWithEmailAndPassword(
             email: _email, password: _password );
@@ -59,6 +73,7 @@ class _SignUpState extends State<SignUp> {
           final ref = fb.reference( ).child( "general_user" ).child( '$_id' );
           ref.child( 'name' ).set( _name );
           ref.child( 'email' ).set( _email );
+          ref.child( 'NIC' ).set( NIC );
 
           //call ProPic upload method
           upload( context );
@@ -74,8 +89,7 @@ class _SignUpState extends State<SignUp> {
         showError( e.message );
         print( e );
       }
-    }
-    else {
+    }else if(_image == null) {
       //call propic error
       showError1();
     }
@@ -128,7 +142,6 @@ class _SignUpState extends State<SignUp> {
     );
   }
 
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
 
@@ -143,15 +156,15 @@ class _SignUpState extends State<SignUp> {
           ),),
 
         body: SingleChildScrollView(
+          padding: EdgeInsets.symmetric(
+            vertical: 20.0,
+            horizontal: 20.0,
+          ),
           child: Container(
 
             child: Column(
 
               children: <Widget>[
-                SizedBox(
-                  height: 100.0,
-                ),
-
                 imageProfile( ),
                 SizedBox(
                   height: 20,
@@ -163,94 +176,20 @@ class _SignUpState extends State<SignUp> {
 
                     key: _formKey,
                     child: Column(
-
                       children: <Widget>[
-
-                        Container(
-
-                          child: TextFormField(
-
-                            validator: (input) {
-                              if (input.isEmpty) {
-                                return 'Enter Name';
-                              }else if(input.length<4){
-                                return 'Username should be grater than or equel 4';
-                              }
-                            },
-
-                            decoration: InputDecoration(
-                              labelText: 'Name',
-                              prefixIcon: Icon( Icons.person ),
-                            ),
-
-                            onChanged: (val) {
-                              _name = val;
-                            },
-
-                          ),
-                        ),
-
-                        Container(
-
-                          child: TextFormField(
-
-                              validator: (input) {
-                                if (input.isEmpty)
-                                  return 'Enter Email';
-                              },
-
-                              decoration: InputDecoration(
-                                  labelText: 'Email',
-                                  prefixIcon: Icon( Icons.email )
-                              ),
-
-                              onChanged: (val) {
-                                _email = val;
-                              }
-                          ),
-                        ),
-
-                        Container(
-
-                          child: TextFormField(
-
-                              validator: (input) {
-                                if (input.length < 6)
-                                  return 'Provide Minimum 6 Character';
-                              },
-
-                              decoration: InputDecoration(
-                                labelText: 'Password',
-                                prefixIcon: Icon( Icons.lock ),
-                              ),
-                              obscureText: true,
-
-                              onChanged: (val) {
-                                _password = val;
-                              }
-                          ),
-                        ),
-
+                        nameFeld(),
+                        SizedBox( height: 20, ),
+                        nicfeld(),
+                        SizedBox( height: 20, ),
+                        emailFeld(),
+                        SizedBox( height: 20, ),
+                        createPassword(),
+                        SizedBox( height: 20, ),
+                        conformPassword(),
                         SizedBox( height: 20 ),
-
-                        RaisedButton(
-                          padding: EdgeInsets.fromLTRB( 70, 10, 70, 10 ),
-                          onPressed: signUp,
-                          child: Text( 'SignUp', style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 20.0,
-                              fontWeight: FontWeight.bold
-                          )
-                          ),
-                          color: Colors.blueAccent,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular( 20.0 ),
-                          ),
-                        )
-
+                        button(),
                       ],
                     ),
-
                   ),
                 ),
               ],
@@ -261,6 +200,167 @@ class _SignUpState extends State<SignUp> {
     );
   }
 
+
+  /// ******************************************
+  /// NAME
+  /// ******************************************
+  Widget nameFeld(){
+  return Container(
+  child: TextFormField(
+
+    validator: (input) {
+      if (input.isEmpty) {
+        return 'Enter Name';
+      }else if(input.length<4){
+        return 'Username should be grater than or equel 4';
+      }
+    },
+
+    decoration: InputDecoration(
+      labelText: 'Name',
+      hintText: 'This is your user name',
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(20.0)
+      ),
+      prefixIcon: Icon( Icons.person ),
+    ),
+
+    onChanged: (val) {
+      _name = val;
+    },
+
+  ),
+  );
+  }
+  /// *******************NAME********************
+
+  /// ******************************************
+  /// NIC
+  /// ******************************************
+  Widget nicfeld(){
+    return Container(
+
+        child: TextFormField(
+
+            validator: (input) {
+              if (input.isEmpty) {
+                return 'Enter NIC';
+              }else if(input.length>10){
+                return 'Enter valid NIC';
+              }
+            },
+
+            decoration: InputDecoration(
+                labelText: 'NIC',
+                hintText: 'This is yor national ID',
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(20.0)
+                ),
+                prefixIcon: Icon( Icons.person )
+            ),
+
+            onChanged: (val) {
+              NIC = val;
+            }
+        ),
+      );
+  }
+  /// *******************NIC********************
+
+  /// ******************************************
+  /// EMAIL
+  /// ******************************************
+  Widget emailFeld() {
+    return Container(
+      child: TextFormField(
+          validator: (input) {
+            if (input.isEmpty)
+              return 'Enter Email';
+          },
+
+          keyboardType: TextInputType.emailAddress,
+          decoration: InputDecoration(
+              labelText: 'Email',
+              hintText: 'This is yor valid email',
+              border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20.0)
+              ),
+              prefixIcon: Icon( Icons.email )
+          ),
+
+          onChanged: (val) {
+            _email = val;
+          }
+      ),
+    );
+  }
+  /// *******************EMAIL**********************
+
+  /// ******************************************
+  /// CREATE PASSWORD
+  /// ******************************************
+  Widget createPassword(){
+    return Container(
+
+      child: TextFormField(
+          controller: _passwordController,
+          validator: (input) {
+            if(input.isEmpty){
+              return 'Password cannot be empty';
+            }else if (input.length < 6) {
+              return 'Provide Minimum 6 Character';
+            }
+          },
+
+          decoration: InputDecoration(
+            labelText: 'Create Password',
+            hintText: 'Create new password',
+            border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(20.0)
+            ),
+            prefixIcon: Icon( Icons.lock ),
+          ),
+          obscureText: true,
+
+          onChanged: (val) {
+            password = val;
+          }
+      ),
+    );
+  }
+  /// *************Create Password****************
+
+  /// ******************************************
+  /// CONFORM PASSWORD
+  /// ******************************************
+  Widget conformPassword() {
+    return Container(
+
+      child: TextFormField(
+          controller: _confirmPasswordController,
+          validator: (input) {
+            if (input != _passwordController.value.text)
+              return 'Password do not match!';
+          },
+
+          decoration: InputDecoration(
+            labelText: 'Conform Password',
+            hintText: 'Type created password',
+            border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(20.0)
+            ),
+            prefixIcon: Icon( Icons.lock ),
+          ),
+          obscureText: true,
+
+          onChanged: (val) {
+            _password = val;
+          }
+      ),
+    );
+  }
+  /// *************CONFORM PASSWORD*****************
+
   /// **********************************************
   /// Image selection
   /// **********************************************
@@ -270,7 +370,7 @@ class _SignUpState extends State<SignUp> {
         CircleAvatar(
           radius: 80.0,
           backgroundImage: _image == null
-              ? AssetImage( "images/my3.jpg" )
+              ? AssetImage( "images/avatar.png" )
               : FileImage( File( _image.path ) ),
         ),
         Positioned(
@@ -366,4 +466,24 @@ class _SignUpState extends State<SignUp> {
     setState(() {});
   }
 
+  /// **********************************************
+  /// SIGNUP BUTTON
+  /// **********************************************
+  Widget button(){
+    return RaisedButton(
+      padding: EdgeInsets.fromLTRB( 70, 10, 70, 10 ),
+      onPressed: signUp,
+      child: Text( 'SignUp', style: TextStyle(
+          color: Colors.white,
+          fontSize: 20.0,
+          fontWeight: FontWeight.bold
+      )
+      ),
+      color: Colors.blueAccent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular( 20.0 ),
+      ),
+    );
+  }
+  /// ***********SIGNUP BUTTON***********************
 }

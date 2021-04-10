@@ -51,7 +51,7 @@ class _StartState extends State<Start> {
 
                     children: <TextSpan>[
                       TextSpan(
-                          text: 'E-Consultent', style: TextStyle(
+                          text: 'E-Consultant', style: TextStyle(
                           fontSize: 30.0,
                           fontWeight: FontWeight.bold,
                           color:Colors.black54)

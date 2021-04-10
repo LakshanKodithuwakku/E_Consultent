@@ -1,36 +1,62 @@
-import 'package:econsultent/cells/detail_cell.dart';
-import 'package:econsultent/models/consultant.dart';
-import 'package:econsultent/utils/custom_icons_icons.dart';
 import 'package:econsultent/utils/he_color.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:econsultent/pages/Booking.dart';
 import 'package:econsultent/pages/Rating.dart';
+import 'package:econsultent/pages/Home.dart';
 
-class DetailPage extends StatefulWidget {
-  final Consultant consultant;
+class Detail extends StatefulWidget {
 
-  const DetailPage({Key key, @required this.consultant}) : super(key: key);
+  String consultantKey ;
+  Detail({this.consultantKey});
 
   @override
-  _DetailPageState createState() => _DetailPageState();
+  _DetailState createState() => _DetailState();
 }
+
+String fname,lname,field,rating,country,proPic, description,consultentId;
+bool verified;
+String l1,l2,l3;
+int _no=0;
+List<String> myList = List<String>(3);
 
 /// ***********************************
 /// Dropdown menu Constants
 /// ***********************************
 class Constants{
-  static const String Booking = 'Booking';
   static const String Report = 'Report';
-  static const String GiveReview = 'GiveReview';
-
+  static const String GiveReview = 'Give Review';
   static const List<String> choices = <String>[
-    Booking,
     GiveReview,
     Report
   ];
 }
 
-class _DetailPageState extends State<DetailPage> {
+class _DetailState extends State<Detail> {
+
+  DatabaseReference _ref;
+  @override
+  void initState(){
+    super.initState();
+    _ref = FirebaseDatabase.instance.reference().child('Consultants');
+    getConsultantDetail();
+  }
+
+  getConsultantDetail() async{
+    DataSnapshot snapshot = await _ref.child(widget.consultantKey).once();
+
+    Map Consultants = snapshot.value;
+    fname = Consultants['firstName'];
+    lname = Consultants['secondName'];
+    field = Consultants['field'];
+    rating = Consultants['averageRating'];
+    country = Consultants['country'];
+    proPic = Consultants['proPicURL'];
+    description = Consultants['description'];
+    verified = Consultants['verified'];
+    consultentId = Consultants['uid'];
+  }
+
   /// **********************************************
   /// LIFE CYCLE METHODS
   /// **********************************************
@@ -54,11 +80,7 @@ class _DetailPageState extends State<DetailPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Dr.' +
-                        widget.consultant.firstName +
-                        ' ' +
-                        widget.consultant.lastName,
+                  Text( fname +' '+ lname,
                     style: TextStyle(
                       color: Colors.black,
                       fontSize: 22,
@@ -70,16 +92,13 @@ class _DetailPageState extends State<DetailPage> {
                   ),
                   Row(
                     children: [
-                      Icon(
-                        CustomIcons.pin_location,
-                        size: 14,
+                      Icon(Icons.location_on_sharp,
                         color: HexColor('#222222'),
                       ),
                       SizedBox(
                         width: 4,
                       ),
-                      Text(
-                        'Kandy, Sri Lanka',
+                      Text(country,
                         style: TextStyle(
                           color: HexColor('#000000'),
                           fontSize: 14,
@@ -98,11 +117,10 @@ class _DetailPageState extends State<DetailPage> {
                       border: Border.all(color: HexColor('#FFEDBE'), width: 1),
                       borderRadius: BorderRadius.circular(4),
                     ),
-                    child: Text(
-                      widget.consultant.type + ' Specialist',
+                    child: Text(  field,
                       style: TextStyle(
-                        color: HexColor('#FFBF11'),
-                        fontSize: 11,
+                        color: Colors.orange,
+                        fontSize: 13,
                         fontWeight: FontWeight.w400,
                       ),
                     ),
@@ -110,8 +128,7 @@ class _DetailPageState extends State<DetailPage> {
                   SizedBox(
                     height: 32,
                   ),
-                  Text(
-                    'Dr. Albert Alexanderis a Renal Physician who has comprehensive expertise in the fields of Renal Medicine and Internal Medicine. While Dr Ho specializes in dialysis and critical care nephrology, years of extensive training have also equipped him with skills to effectively handle a wide range of other kidney diseases, including kidney impairment, inflammation, infection and transplantation.',
+                  Text(description,
                     style: TextStyle(
                       color: HexColor('#2E2E2E'),
                       fontSize: 14,
@@ -124,23 +141,10 @@ class _DetailPageState extends State<DetailPage> {
                   SizedBox(
                     height: 91,
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        DetailCell(title: '162', subTitle: 'Clients'),
-                        DetailCell(title: '4+', subTitle: 'Exp. Years'),
-                        DetailCell(title: '4273', subTitle: 'Rating'),
+                        button(),
                       ],
-                    ),
-                  ),
-                  SizedBox(
-                    height: 32,
-                  ),
-                  Text(
-                    'Apart from kidney-related conditions, Dr Ho also offers care and consultation in various medical conditions that are related to kidney disease, such as hypertension, diabetes and vascular diseases.',
-                    style: TextStyle(
-                      color: HexColor('#000000'),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w300,
                     ),
                   ),
                 ],
@@ -165,8 +169,10 @@ class _DetailPageState extends State<DetailPage> {
       iconTheme: IconThemeData(color: Colors.white),
 
       leading: IconButton(
-        icon: Icon(CustomIcons.arrow_left, size: 20),
-        onPressed: () => Navigator.pop(context),
+        icon: Icon(Icons.arrow_back,),
+        onPressed: () {
+          Navigator.push(context, MaterialPageRoute(builder: (context)=> HomePage()));
+        }
       ),
 
       /// ***********************************
@@ -185,7 +191,6 @@ class _DetailPageState extends State<DetailPage> {
           },
         ),
       ],
-
     );
   }
 
@@ -193,12 +198,10 @@ class _DetailPageState extends State<DetailPage> {
   /// Dropdown menu choice action
   /// ***********************************
   void choiceAction(String choice){
-    if(choice == Constants.Booking){
-      Navigator.push(context, MaterialPageRoute(builder: (context)=> MyDropDown()));
-    }else if(choice == Constants.Report){
-       _showMultiSelect(context);
+    if(choice == Constants.Report){
+      _showMultiSelect(context);
     }else if(choice == Constants.GiveReview){
-      Navigator.push(context, MaterialPageRoute(builder: (context)=> RatingsPage()));
+      Navigator.push(context, MaterialPageRoute(builder: (_)=>RatingsPage(consultentId: consultentId,)));
     }
   }
 
@@ -223,22 +226,15 @@ class _DetailPageState extends State<DetailPage> {
           ),
           Positioned(
             right: 64,
-            bottom: 15,
-            child: SizedBox(
-              height: 250,
-              child: AspectRatio(
-                aspectRatio: 196 / 285,
-                child: Hero(
-                  tag: widget.consultant.firstName + widget.consultant.lastName,
-                  child: Image(
-                    filterQuality: FilterQuality.high,
-                    fit: BoxFit.fitHeight,
-                    image: AssetImage('assets/images/' + widget.consultant.image),
+            bottom: 30,
+                  child: CircleAvatar(
+                    radius: 100.0,
+                    backgroundImage: proPic == null
+                        ? AssetImage( "images/avatar.png" )
+                        : NetworkImage(proPic),
                   ),
-                ),
-              ),
-            ),
           ),
+
           Positioned(
             left: 0,
             right: 0,
@@ -259,8 +255,7 @@ class _DetailPageState extends State<DetailPage> {
               ),
               child: Row(
                 children: [
-                  Text(
-                    widget.consultant.rating.toString(),
+                  Text(rating,
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 14,
@@ -271,62 +266,125 @@ class _DetailPageState extends State<DetailPage> {
                     width: 4,
                   ),
                   Icon(
-                    CustomIcons.star,
+                    Icons.star,
                     color: Colors.white,
-                    size: 14,
+                    size: 20,
                   ),
                 ],
               ),
             ),
           ),
+          verify(),
         ],
       ),
     );
   }
 
 
+  Widget verify(){
+    if( verified ) {
+      return Positioned(
+        right: 210,
+        bottom: 50,
+        child: Container(
+          padding: EdgeInsets.symmetric( horizontal: 10, vertical: 10 ),
+          decoration: BoxDecoration(
+            color: HexColor( '#FFBB23' ),
+            borderRadius: BorderRadius.circular( 50 ),
+          ),
+          child: Row(
+            children: [
+              Icon( Icons.verified_user_sharp,
+                color: Colors.white,
+                size: 44,
+              ),
+            ],
+          ),
+        ),
+      );
+    }else{
+      return Row(
+        children: [
+          Icon(
+            Icons.star,
+            color: Colors.transparent,
+            size: 34,
+          ),
+        ],
+      );
+    }
+  }
 
   /// ******************************************
-  /// Multi silect Check box
+  /// Multi select Check box
   /// ******************************************
+
+  List <MultiSelectDialogItem<int>> multiItem = List();
+
+  final valuestopopulate = {
+    1: "He/She is a liar.",
+    2: "Sexual harassment.",
+    3: "Poor communication"
+  };
+
+  void populateMultiselect(){
+    for(int v in  valuestopopulate.keys){
+      multiItem.add(MultiSelectDialogItem(v, valuestopopulate[v]));
+    }
+  }
+
   void _showMultiSelect(BuildContext context) async {
-   /* multiItem = [];
+     multiItem = [];
     populateMultiselect();
-    final items = multiItem;*/
-     final items = <MultiSelectDialogItem<int>>[
-       MultiSelectDialogItem(1, 'He/She is a liar.'),
-       MultiSelectDialogItem(2, 'Sexual harassment.'),
-       MultiSelectDialogItem(3, 'Poor communication'),
-     ];
-
+    final items = multiItem;
     final selectedValues = await showDialog<Set<int>>(
       context: context,
       builder: (BuildContext context) {
         return MultiSelectDialog(
           items: items,
-   //       initialSelectedValues: [1,2].toSet(),
         );
       },
     );
 
     print(selectedValues);
-    //getvaluefromkey(selectedValues);
+    getvaluefromkey(selectedValues);
   }
 
-  /*void getvaluefromkey(Set selection){
+  void getvaluefromkey(Set selection){
     if(selection != null){
-      for(int x in selection.toList()){
-        print(valuestopopulate[x]);
+      for(int X in selection.toList()){
+        print(valuestopopulate[2]);
+        myList[X] = valuestopopulate[X];
       }
     }
-  }*/
-  /// ********************************************
+  }
+
+  /// **********************************************
+  /// BOOK BUTTON
+  /// **********************************************
+  button() {
+    return RaisedButton(
+      padding: EdgeInsets.fromLTRB( 70, 10, 70, 10 ),
+      onPressed: () {
+        //Navigator.push(
+          //  context, MaterialPageRoute( builder: (context) => MyDropDown(consultentId: consultentId,) ) );
+          Navigator.push(context, MaterialPageRoute(builder: (context) =>MyDropDown(consultentId: consultentId,) ) );
+      },
+      child: Text( 'Book', style: TextStyle(
+          color: Colors.white,
+          fontSize: 20.0,
+          fontWeight: FontWeight.bold
+      )
+      ),
+      color: Colors.blueAccent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular( 20.0 ),
+      ),
+    );
+  }
+/// ***********BOOK BUTTON***********************
 
 }
-
-
-
-
 
 // ================== coped from stakeoverflow
 
@@ -348,53 +406,55 @@ class MultiSelectDialog<V> extends StatefulWidget {
 }
 
 class _MultiSelectDialogState<V> extends State<MultiSelectDialog<V>> {
-  final _selectedValues = Set<V>();
+  final _selectedValues = Set<V>( );
 
   void initState() {
-    super.initState();
+    super.initState( );
     if (widget.initialSelectedValues != null) {
-      _selectedValues.addAll(widget.initialSelectedValues);
+      _selectedValues.addAll( widget.initialSelectedValues );
     }
   }
 
   void _onItemCheckedChange(V itemValue, bool checked) {
-    setState(() {
+    setState( () {
       if (checked) {
-        _selectedValues.add(itemValue);
+        _selectedValues.add( itemValue );
       } else {
-        _selectedValues.remove(itemValue);
+        _selectedValues.remove( itemValue );
       }
-    });
+    } );
   }
 
   void _onCancelTap() {
-    Navigator.pop(context);
+    Navigator.pop( context );
   }
 
   void _onSubmitTap() {
-    Navigator.pop(context, _selectedValues);
+    _incrementCounter();
+  //  Navigator.pop( context, _selectedValues );
+
   }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Select Reasons'),
-      contentPadding: EdgeInsets.only(top: 12.0),
+      title: Text( 'Select Reasons' ),
+      contentPadding: EdgeInsets.only( top: 12.0 ),
       content: SingleChildScrollView(
         child: ListTileTheme(
-          contentPadding: EdgeInsets.fromLTRB(14.0, 0.0, 24.0, 0.0),
+          contentPadding: EdgeInsets.fromLTRB( 14.0, 0.0, 24.0, 0.0 ),
           child: ListBody(
-            children: widget.items.map(_buildItem).toList(),
+            children: widget.items.map( _buildItem ).toList( ),
           ),
         ),
       ),
       actions: <Widget>[
         FlatButton(
-          child: Text('CANCEL'),
+          child: Text( 'CANCEL' ),
           onPressed: _onCancelTap,
         ),
         FlatButton(
-          child: Text('OK'),
+          child: Text( 'OK' ),
           onPressed: _onSubmitTap,
         )
       ],
@@ -402,18 +462,38 @@ class _MultiSelectDialogState<V> extends State<MultiSelectDialog<V>> {
   }
 
   Widget _buildItem(MultiSelectDialogItem<V> item) {
-    final checked = _selectedValues.contains(item.value);
+    final checked = _selectedValues.contains( item.value );
     return CheckboxListTile(
       value: checked,
-      title: Text(item.label),
+      title: Text( item.label ),
       controlAffinity: ListTileControlAffinity.leading,
-      onChanged: (checked) => _onItemCheckedChange(item.value, checked),
+      onChanged: (checked) => _onItemCheckedChange( item.value, checked ),
     );
   }
+
+  /// ******************************************************
+  /// SEND TO DATABASE
+  /// ******************************************************
+  final FirebaseDatabase database = FirebaseDatabase.instance;
+  void _incrementCounter(){
+    database.reference().child("Report").
+    child(consultentId).child(_no.toString()).set({
+      "General_User_Id" : "2apJ7C4ef8ZQGkJmLC0m5N1IhgX0",
+     "Reason" : myList[0] +" "+ myList[1] +" "+ myList[2]
+    });
+    _no++;
+    myList[0]="";
+    myList[1]="";
+    myList[2]="";
+    Navigator.pop( context, _selectedValues );
+    setState(() {
+      database.reference().child("Report").once().then((DataSnapshot snapshot){
+        Map<dynamic, dynamic> data = snapshot.value;
+        print("Value: $data");
+      });
+    });
+  }
+/// ****************SEND TO DATABASE*****************
 }
-
-// ===================
-
-
 
 

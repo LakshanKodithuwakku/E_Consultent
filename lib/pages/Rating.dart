@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:econsultent/pages/detail_page.dart';
+import 'package:econsultent/pages/detail.dart';
 
 class RatingsPage extends StatefulWidget {
+
+  String consultentId;
+  RatingsPage({this.consultentId});
+
   @override
   _RatingsPage createState() => _RatingsPage();
 }
@@ -37,23 +41,22 @@ class _RatingsPage extends State<RatingsPage>{
 
   int _rating,_no=1;
   String  _text;
-  String _consultentId = "2apJ7C4ef8ZQGkJmLC0m5N1IhgX2";
 
   /// ******************************************************
   /// SEND TO DATABASE
   /// ******************************************************
   final FirebaseDatabase database = FirebaseDatabase.instance;
   void _incrementCounter(){
-    if(_consultentId=="2apJ7C4ef8ZQGkJmLC0m5N1IhgX2"){
+    if(consultentId =="2apJ7C4ef8ZQGkJmLC0m5N1IhgX2"){
       _no=_no+1;
     }
         database.reference().child("Reviews").
-        child(_consultentId).child(_no.toString()).set({
+        child(consultentId).child(_no.toString()).set({
           "name" : "${user.displayName}",
           "rating" : _currentRating,
           'text' : _text,
         });
-
+    _currentRating =0;
     setState(() {
       database.reference().child("Reviews").once().then((DataSnapshot snapshot){
         Map<dynamic, dynamic> data = snapshot.value;
@@ -73,10 +76,11 @@ class _RatingsPage extends State<RatingsPage>{
       appBar: AppBar(title: Text("Share your experience"),centerTitle: true,
         leading: IconButton(
           icon: Icon(
-              Icons.arrow_back
+              Icons.arrow_back,
           ),
           onPressed: (){
-          //  Navigator.push(context, MaterialPageRoute(builder: (context)=> DetailPage()));
+            Navigator.push(context, MaterialPageRoute(builder: (context)=> Detail()));
+            _currentRating =0;
           },
         ),),
 
@@ -155,6 +159,7 @@ class _RatingsPage extends State<RatingsPage>{
           onTap: () => {
             _incrementCounter(),
             getUser(),
+          Navigator.push(context, MaterialPageRoute(builder: (context)=> Detail())),
           },
 
           child: Container(

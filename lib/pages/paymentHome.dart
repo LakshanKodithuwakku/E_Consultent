@@ -4,6 +4,7 @@ import 'package:progress_dialog/progress_dialog.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 
+import 'Home.dart';
 import 'existing-cards.dart';
 
 class PaymentPage extends StatefulWidget {
@@ -82,6 +83,12 @@ class PaymentPageState extends State<PaymentPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Pay via card'),
+        leading: IconButton(
+            icon: Icon(Icons.arrow_back,),
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context)=> HomePage()));
+            }
+        ),
       ),
       body: Container(
         padding: EdgeInsets.all(20),

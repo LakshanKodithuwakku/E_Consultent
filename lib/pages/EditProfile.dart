@@ -1,7 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:econsultent/pages/home_page.dart';
+//import 'package:econsultent/pages/home_page.dart';
+import 'package:econsultent/pages/Home.dart';
 import 'dart:io';
 import 'package:firebase_database/firebase_database.dart';
 //import 'package:firebase_storage/firebase_storage.dart';
@@ -14,11 +15,36 @@ class EditProfile extends StatefulWidget {
   _EditProfileState createState() => _EditProfileState();
 }
 
+String a;
 class _EditProfileState extends State<EditProfile> {
 
   File _image;
-  String _name, _email, _password;
+  String _name, _password;
+  String name,proPic,nic;
 
+  /// *******************************************************
+  /// GET PRICE DETAILS
+  /// *******************************************************
+  DatabaseReference _ref;
+  @override
+  void initState() {
+    super.initState( );
+    this.getUser( );
+
+    _ref = FirebaseDatabase.instance.reference( ).child( 'general_user' );
+    getUserDetails( );
+  }
+
+  getUserDetails() async{
+    DataSnapshot snapshot = await _ref.child(
+       "0pUgXKWugmY9MpHkHmX7E6zOdJ72"
+    ).once();
+    Map general_user = snapshot.value;
+    name = general_user['name'];
+    proPic = general_user['proPicURL'];
+    nic = general_user['NIC'];
+  }
+  /// *****************GET PRICE DETAILS********************
 
   ///**************************************************************************************
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -37,13 +63,9 @@ class _EditProfileState extends State<EditProfile> {
        // this.isloggedin=true;
       });
     }
+
   }
 
-  @override
-  void initState(){
-   // super.initState();
-    this.getUser();
-  }
   ///**************************************************************************************
 
   /// ******************************************************
@@ -52,7 +74,7 @@ class _EditProfileState extends State<EditProfile> {
   final FirebaseDatabase database = FirebaseDatabase.instance;
   void _userUpdate(){
     database.reference().child("general_user").
-    child("${user.uid}").set({
+    child("${user.uid}").update({
       "email" : "${user.email}",
       "name" : _name,
     });
@@ -106,52 +128,13 @@ class _EditProfileState extends State<EditProfile> {
                     child: Column(
 
                       children: <Widget>[
-
-                        Container(
-
-                          child: TextFormField(
-
-                            validator: (input) {
-                              if (input.isEmpty) {
-                                return 'Enter Name';
-                              }else if(input.length<4){
-                                return 'Username should be grater than or equel 4';
-                              }
-                            },
-
-                            decoration: InputDecoration(
-                              labelText: "${user.displayName}",
-                              prefixIcon: Icon( Icons.person ),
-                            ),
-
-                            onChanged: (val) {
-                              _name = val;
-                            },
-
-                          ),
-                        ),
-
-                        Container(
-
-                          child: TextFormField(
-
-                              validator: (input) {
-                                if (input.length < 6)
-                                  return 'Provide Minimum 6 Character';
-                              },
-
-                              decoration: InputDecoration(
-                                labelText: 'Password',
-                                prefixIcon: Icon( Icons.lock ),
-                              ),
-                              obscureText: true,
-
-                              onChanged: (val) {
-                                _password = val;
-                              }
-                          ),
-                        ),
-
+                        displayName(),
+                        SizedBox( height: 20 ),
+                        currentPassword(),
+                        SizedBox( height: 20 ),
+                        newPassword(),
+                        SizedBox( height: 20 ),
+                        conformNewPassword(),
                         SizedBox( height: 70 ),
 
                         Row(mainAxisAlignment: MainAxisAlignment.center,
@@ -175,6 +158,129 @@ class _EditProfileState extends State<EditProfile> {
     );
 
   }
+
+  /// *****************************************
+  /// current Name
+  /// *****************************************
+  Widget displayName(){
+    return Container(
+      child: TextFormField(
+
+        validator: (input) {
+          if (input.isEmpty) {
+            return 'Enter Name';
+          }else if(input.length<4){
+            return 'Username should be grater than or equel 4';
+          }
+        },
+
+        decoration: InputDecoration(
+          labelText: "Name: "+ "${user.displayName}",
+          hintText: 'Enter new name',
+          border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20.0)
+          ),
+          prefixIcon: Icon( Icons.person ),
+        ),
+
+        onChanged: (val) {
+          _name = val;
+        },
+
+      ),
+    );
+  }
+  /// ***********current name**************
+
+  /// *****************************************
+  /// current Password
+  /// *****************************************
+  Widget currentPassword(){
+    return Container(
+
+      child: TextFormField(
+
+          validator: (input) {
+            if (input.length < 6)
+              return 'Provide Minimum 6 Character';
+          },
+
+          decoration: InputDecoration(
+            labelText: 'Current Password',
+            border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(20.0)
+            ),
+            prefixIcon: Icon( Icons.lock ),
+          ),
+          obscureText: true,
+
+          onChanged: (val) {
+            _password = val;
+          }
+      ),
+    );
+  }
+  /// *********current Password***************
+
+  /// *****************************************
+  /// New Password
+  /// *****************************************
+  Widget newPassword(){
+    return Container(
+
+      child: TextFormField(
+
+          validator: (input) {
+            if (input.length < 6)
+              return 'Provide Minimum 6 Character';
+          },
+
+          decoration: InputDecoration(
+            labelText: 'Create New Password',
+            border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(20.0)
+            ),
+            prefixIcon: Icon( Icons.lock ),
+          ),
+          obscureText: true,
+
+          onChanged: (val) {
+            _password = val;
+          }
+      ),
+    );
+  }
+  /// *********New Password***************
+
+  /// *****************************************
+  /// Conform New Password
+  /// *****************************************
+  Widget conformNewPassword(){
+    return Container(
+
+      child: TextFormField(
+
+          validator: (input) {
+            if (input.length < 6)
+              return 'Provide Minimum 6 Character';
+          },
+
+          decoration: InputDecoration(
+            labelText: 'Conform New Password',
+            border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(20.0)
+            ),
+            prefixIcon: Icon( Icons.lock ),
+          ),
+          obscureText: true,
+
+          onChanged: (val) {
+            _password = val;
+          }
+      ),
+    );
+  }
+  /// *********Conform New Password***************
 
   /// *****************************************
   /// Save Button

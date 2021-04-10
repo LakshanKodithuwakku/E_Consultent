@@ -1,25 +1,57 @@
+import 'dart:convert';
+import 'dart:math';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:econsultent/pages/home_page.dart';
+import 'package:econsultent/pages/Home.dart';
 import 'package:econsultent/pages/paymentHome.dart';
+import 'package:econsultent/pages/detail.dart';
 
 
 class MyDropDown extends StatefulWidget {
+
+  String consultentId;
+  MyDropDown({this.consultentId});
   @override
   _MyDropDownState createState() => _MyDropDownState();
 }
-
+String p1,p2,p3,p4,p5,p6;
 class _MyDropDownState extends State<MyDropDown>{
-  final List<String> type = ["Video", "Audio", "Text chat"];
+  /// *******************************************************
+  /// GET PRICE DETAILS
+  /// *******************************************************
+  DatabaseReference _ref;
+  @override
+  void initState() {
+    super.initState( );
+    this.getUser( );
+    pickedDate = DateTime.now( );
+    time = TimeOfDay.now( );
+    _ref = FirebaseDatabase.instance.reference( ).child( 'Price' );
+    getPrice( );
+  }
+
+  getPrice() async{
+    DataSnapshot snapshot = await _ref.once();
+    Map Price = snapshot.value;
+    p1 = Price['Video-Quick'];
+    p2 = Price['Video-hour'];
+    p3 = Price['Video-Scheduled'];
+    p4 = Price['Text-Quick'];
+    p5 = Price['Text-hour'];
+    p6 = Price['Text-Scheduled'];
+  }
+  /// *****************GET PRICE DETAILS********************
+  DateTime pickedDate;
+  TimeOfDay time;
+
+  final List<String> type = ["Video", "Text chat"];
   final List<String> duration = ["Quick solution","One hour","Scheduled day"];
 
   String selectedtype = "Video";
   String selectedduration = "Quick solution";
-  double p1=200;
-  double p2=100;
-  double p3=50;
-  String price= '200';
+  String price= p1;
 
   /// **********************************************
   /// PAGE BODY
@@ -44,6 +76,10 @@ class _MyDropDownState extends State<MyDropDown>{
                   SizedBox(height: 50,),
                   Duration (),
                   SizedBox(height: 50,),
+                  date(),
+                  SizedBox(height: 50,),
+                  timebar(),
+                  SizedBox(height: 20,),
                   Text("Rs: "+price, style: TextStyle(fontSize: 36, fontWeight: FontWeight.w900),),
                   SizedBox(height: 50,),
                   button(),
@@ -82,33 +118,22 @@ class _MyDropDownState extends State<MyDropDown>{
       case 'Video':
         {
           if (selectedduration == 'Quick solution') {
-            price = p1.toString( );
+            price = p1;
           } else if (selectedduration == 'One hour') {
-            price = (p1*1.5).toString( );
+            price = p2;
           } else if (selectedduration == 'Scheduled day') {
-            price = (p1*2).toString( );
-          }
-        }
-        break;
-      case 'Audio':
-        {
-          if (selectedduration == 'Quick solution') {
-            price = p2.toString( );
-          } else if (selectedduration == 'One hour') {
-            price = (p2*1.5).toString( );
-          } else if (selectedduration == 'Scheduled day') {
-            price = (p2*2).toString( );
+            price = p3;
           }
         }
         break;
       case 'Text chat':
         {
           if (selectedduration == 'Quick solution') {
-            price = p3.toString( );
+            price = p4;
           } else if (selectedduration == 'One hour') {
-            price = (p3*1.5).toString( );
+            price = p5;
           } else if (selectedduration == 'Scheduled day') {
-            price = (p3*2).toString( );
+            price = p6;
           }
         }
         break;
@@ -183,6 +208,66 @@ class _MyDropDownState extends State<MyDropDown>{
       );
   }
 
+  /// *****************************************
+  /// Select date
+  /// *****************************************
+  Widget date(){
+    return
+          ListTile(
+            title: Text("Date: ${pickedDate.year}, ${pickedDate.month}, ${pickedDate.day}",
+              style: TextStyle(
+              color: Colors.black,
+              fontSize: 18,
+            ),),
+            trailing: Icon(Icons.keyboard_arrow_down),
+            onTap: _pickDate,
+          );
+  }
+  
+  _pickDate() async {
+    DateTime date = await showDatePicker(
+        context: context,
+        initialDate: pickedDate,
+        firstDate: DateTime(DateTime.now().year-5),
+        lastDate: DateTime(DateTime.now().year+5),
+    );
+
+    if(date != null)
+      setState(() {
+        pickedDate = date;
+      });
+  }
+  /// **************Select date*************
+
+  /// *****************************************
+  /// TIME date
+  /// *****************************************
+  Widget timebar(){
+    return
+      ListTile(
+        title: Text("Time: ${time.hour}, ${time.minute}",
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 18,
+          ),),
+        trailing: Icon(Icons.keyboard_arrow_down),
+        onTap: _pickTime,
+      );
+  }
+
+  _pickTime() async {
+    TimeOfDay t = await showTimePicker(
+      context: context,
+      initialTime: time,
+    );
+
+    if(t != null)
+      setState(() {
+        time = t;
+      });
+  }
+  /// **************TIME date*************
+
   /// **************************************
   /// Submit button
   /// **************************************
@@ -244,28 +329,39 @@ class _MyDropDownState extends State<MyDropDown>{
     }
   }
 
-  @override
-  void initState(){
-    this.getUser();
-  }
   ///*********RETRIEVE CLIENT ID****************************
+
+  /// ******************************************************
+  /// create a random number
+  /// ******************************************************
+  String CreateCryptoRandomString([int length = 32]) {
+    final Random _random = Random.secure();
+    var values = List<int>.generate(length, (i) => _random.nextInt(256));
+    return base64Url.encode(values);
+  }
+  ///*********create a random number***********************
 
   /// ******************************************************
   /// SEND TO DATABASE
   /// ******************************************************
-  String _consultentId = "2apJ7C4ef8ZQGkJmLC0m5N1IhgX2";
-  int _no=1;
-
   final FirebaseDatabase database = FirebaseDatabase.instance;
   void _savePrice(){
-    if(_consultentId=="2apJ7C4ef8ZQGkJmLC0m5N1IhgX2"){
-      _no=_no+1;
-    }
     database.reference().child("Client").
-    child("${user.uid}").child("booking").child(_no.toString()).set({
+    child("${user.uid}").child("booking").child(CreateCryptoRandomString()).set({
       "amount" : price,
       "clientID" : "${user.uid}",
-      'consultantID' : _consultentId,
+      "selectedtype" : selectedtype,
+      "selectedduration" : selectedduration,
+      "consultentId" : consultentId,
+    });
+    database.reference().child("Consultants").
+    child(consultentId).child("meetings").child(CreateCryptoRandomString()).set({
+      "amount" : price,
+      "clientID" : "${user.uid}",
+      "selectedtype" : selectedtype,
+      "selectedduration" : selectedduration,
+      "date" : pickedDate.year.toString()+"-"+pickedDate.month.toString().padLeft(2,'0')+"-"+pickedDate.day.toString().padLeft(2,'0'),
+      "startTime" : time.hour.toString().padLeft(2,'0')+":"+time.minute.toString().padLeft(2,'0'),
     });
 
     setState(() {

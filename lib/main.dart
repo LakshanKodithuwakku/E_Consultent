@@ -1,6 +1,7 @@
 import 'package:econsultent/pages/Rating.dart';
 import 'package:flutter/material.dart';
-import 'package:econsultent/pages/home_page.dart';
+//import 'package:econsultent/pages/home_page.dart';
+import 'package:econsultent/pages/Home.dart';
 
 void main() => runApp(MyApp());
 
