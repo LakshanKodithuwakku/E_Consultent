@@ -1,15 +1,16 @@
+import 'package:econsultent/pages/verify.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-//import 'package:econsultent/pages/home_page.dart';
 import 'package:econsultent/pages/Home.dart';
 import 'package:econsultent/pages/Start.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:path/path.dart' as path;
 //import 'package:econsultent/pages/verify.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class SignUp extends StatefulWidget {
   @override
@@ -37,7 +38,7 @@ class _SignUpState extends State<SignUp> {
   }
 
 
-  String _name, _email, _password, NIC, password;
+  String _name, _email, _password, NIC, password,_uploadeFileURL,fileURL;
 
   checkAuthentication() async {
     _auth.onAuthStateChanged.listen( (user) async
@@ -46,6 +47,7 @@ class _SignUpState extends State<SignUp> {
         Navigator.push( context, MaterialPageRoute(
             builder: (context) => //VerifyScreen()));
                 HomePage( ) ) );
+       // await sendVerificationEmail();
       }
     }
     );
@@ -61,10 +63,11 @@ class _SignUpState extends State<SignUp> {
   String _pathImg = "";
 
   signUp() async {
-    if (_formKey.currentState.validate( ) && _image != null ) {
+    if (_formKey.currentState.validate( )) {
       try {
         AuthResult result = await _auth.createUserWithEmailAndPassword(
             email: _email, password: _password );
+        await sendVerificationEmail();
         FirebaseUser user = result.user;
         if (user != null) {
           ////////
@@ -74,11 +77,11 @@ class _SignUpState extends State<SignUp> {
           ref.child( 'name' ).set( _name );
           ref.child( 'email' ).set( _email );
           ref.child( 'NIC' ).set( NIC );
-
-          //call ProPic upload method
-          upload( context );
           //ProPic path upload to database
           ref.child( "proPic" ).set( _pathImg );
+          //call ProPic upload method
+          String mediaUrl = await upload( context );
+          ref.child('proPicURL').set(mediaUrl);
 
           UserUpdateInfo updateuser = UserUpdateInfo( );
           updateuser.displayName = _name;
@@ -89,9 +92,6 @@ class _SignUpState extends State<SignUp> {
         showError( e.message );
         print( e );
       }
-    }else if(_image == null) {
-      //call propic error
-      showError1();
     }
   }
 
@@ -103,31 +103,6 @@ class _SignUpState extends State<SignUp> {
 
             title: Text( 'ERROR' ),
             content: Text( errormessage ),
-
-            actions: <Widget>[
-              FlatButton(
-
-                  onPressed: () {
-                    Navigator.of( context ).pop( );
-                  },
-                  child: Text( 'OK' ) )
-            ],
-          );
-        }
-    );
-  }
-
-  /// **********************************************
-  /// Propic error popup
-  /// **********************************************
-  showError1() {
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-
-            title: Text( 'ERROR' ),
-            content: Text( 'Set your profile picture!' ),
 
             actions: <Widget>[
               FlatButton(
@@ -199,7 +174,6 @@ class _SignUpState extends State<SignUp> {
 
     );
   }
-
 
   /// ******************************************
   /// NAME
@@ -457,13 +431,17 @@ class _SignUpState extends State<SignUp> {
   /// **********************************************
   /// ProPic upload to firebase storage
   /// **********************************************
-  Future upload(BuildContext context) async {
+  Future<String> upload(BuildContext context) async {
     String imageName = path.basename(_image.path);
     StorageReference firebaseStorageRef =
     FirebaseStorage.instance.ref().child(imageName);
     StorageUploadTask uploadTask = firebaseStorageRef.putFile(_image);
     StorageTaskSnapshot taskSnapshot = await uploadTask.onComplete;
-    setState(() {});
+
+    // Once the image is uploaded to firebase get the download link.
+    String downlaodUrl = await taskSnapshot.ref.getDownloadURL();
+    print(downlaodUrl);
+    return downlaodUrl;
   }
 
   /// **********************************************
@@ -486,4 +464,22 @@ class _SignUpState extends State<SignUp> {
     );
   }
   /// ***********SIGNUP BUTTON***********************
+
+
+  /// ***********************************************
+  /// EMAIL VERIFICATION
+  /// ***********************************************
+  void sendVerificationEmail() async {
+    FirebaseUser firebaseUser = await FirebaseAuth.instance.currentUser();
+    //User firebaseUser = FirebaseAuth.instance.currentUser;
+    await firebaseUser.sendEmailVerification();
+
+    Fluttertoast.showToast(
+        msg: "email verifcation link has sent to your email.");
+
+    /*Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => HomePage()),
+            (Route<dynamic> route) => false);*/
+  }
 }

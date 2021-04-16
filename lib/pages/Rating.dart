@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -27,7 +30,6 @@ class _RatingsPage extends State<RatingsPage>{
     if (firebaseUser != null) {
       setState( () {
         this.user = firebaseUser;
-        print("lk");
       } );
     }
   }
@@ -36,25 +38,49 @@ class _RatingsPage extends State<RatingsPage>{
   void initState(){
     super.initState();
     this.getUser();
+    getUserDetail();
   }
   /// *****GET GENERAL USER DETAILS*******
+  DatabaseReference _ref;
+  String proPicURL;
 
-  int _rating,_no=1;
+  /// ******************************************************
+  /// Map user data
+  /// ******************************************************
+  getUserDetail() async{
+    await getUser();
+    _ref = FirebaseDatabase.instance.reference().child('general_user');
+    DataSnapshot snapshot = await _ref.child("${user.uid}").once();
+
+    Map general_user = snapshot.value;
+    proPicURL = general_user['proPicURL'];
+  }
+  /// *****Map user data*******
+  int _rating;
   String  _text;
+
+  /// ******************************************************
+  /// create a random number
+  /// ******************************************************
+  String CreateCryptoRandomString([int length = 8]) {
+    final Random _random = Random.secure();
+    var values = List<int>.generate(length, (i) => _random.nextInt(256));
+    return base64Url.encode(values);
+  }
+  ///*********create a random number***********************
 
   /// ******************************************************
   /// SEND TO DATABASE
   /// ******************************************************
   final FirebaseDatabase database = FirebaseDatabase.instance;
   void _incrementCounter(){
-    if(consultentId =="2apJ7C4ef8ZQGkJmLC0m5N1IhgX2"){
-      _no=_no+1;
-    }
         database.reference().child("Reviews").
-        child(consultentId).child(_no.toString()).set({
+        child(consultentId).child(CreateCryptoRandomString()).set({
           "name" : "${user.displayName}",
           "rating" : _currentRating,
           'text' : _text,
+          "GUID" : "${user.uid}",
+          "proPicURL" : proPicURL,
         });
     _currentRating =0;
     setState(() {

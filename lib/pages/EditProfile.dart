@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-//import 'package:econsultent/pages/home_page.dart';
 import 'package:econsultent/pages/Home.dart';
 import 'dart:io';
 import 'package:firebase_database/firebase_database.dart';
@@ -17,56 +16,58 @@ class EditProfile extends StatefulWidget {
 
 String a;
 class _EditProfileState extends State<EditProfile> {
+  TextEditingController _nameController;
 
   File _image;
   String _name, _password;
-  String name,proPic,nic;
+  String name="",proPic="",password;
 
-  /// *******************************************************
-  /// GET PRICE DETAILS
-  /// *******************************************************
   DatabaseReference _ref;
   @override
   void initState() {
     super.initState( );
-    this.getUser( );
-
-    _ref = FirebaseDatabase.instance.reference( ).child( 'general_user' );
-    getUserDetails( );
+    _nameController = TextEditingController();
+   // getData();
+    getUserID();
+    getUserDetails();
   }
 
-  getUserDetails() async{
-    DataSnapshot snapshot = await _ref.child(
-       "0pUgXKWugmY9MpHkHmX7E6zOdJ72"
-    ).once();
-    Map general_user = snapshot.value;
-    name = general_user['name'];
-    proPic = general_user['proPicURL'];
-    nic = general_user['NIC'];
+ /* //-------init function can not make as asynchronous function
+  Future<void> getData() async {
+      await getUserID();
+      await getUserDetails();
   }
-  /// *****************GET PRICE DETAILS********************
+  //-----------------------------------------------*/
 
-  ///**************************************************************************************
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  //--------------------Retrive user id from firebase
   FirebaseUser user;
-  //bool isloggedin= false;
-
-  getUser() async{
-    FirebaseUser firebaseUser = await _auth.currentUser();
-    await firebaseUser?.reload();
-    firebaseUser = await _auth.currentUser();
-
-    if(firebaseUser !=null)
-    {
-      setState(() {
-        this.user =firebaseUser;
-       // this.isloggedin=true;
-      });
-    }
-
+  String id;
+  Future<void> getUserID() async {
+    final FirebaseUser userData = await FirebaseAuth.instance.currentUser();
+    setState(() {
+      user = userData;
+      id = userData.uid.toString();
+     // password = user.pa.toString();
+      print(userData.uid);
+    });
   }
+//------------------------------------------------------
 
-  ///**************************************************************************************
+  /// *******************************************************
+  /// GET USER DETAILS
+  /// *******************************************************
+  Future<void> getUserDetails( ) async{
+    await getUserID();
+    _ref = FirebaseDatabase.instance.reference( ).child( 'general_user' );
+    DataSnapshot snapshot = await _ref.child("$id").once();
+    Map general_user = snapshot.value;
+    _nameController.text = general_user['name'];
+    name = general_user['name'];
+    print(name);
+    proPic = general_user['proPicURL'];
+    print(proPic);
+  }
+  /// *****************GET USER DETAILS********************
 
   /// ******************************************************
   /// SEND TO DATABASE
@@ -108,14 +109,12 @@ class _EditProfileState extends State<EditProfile> {
         body: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
           child: Container(
-
             child: Column(
 
               children: <Widget>[
                 SizedBox(
                   height: 70.0,
                 ),
-
                 imageProfile( ),
                 SizedBox(
                   height: 20,
@@ -165,7 +164,7 @@ class _EditProfileState extends State<EditProfile> {
   Widget displayName(){
     return Container(
       child: TextFormField(
-
+        controller: _nameController,
         validator: (input) {
           if (input.isEmpty) {
             return 'Enter Name';
@@ -175,7 +174,7 @@ class _EditProfileState extends State<EditProfile> {
         },
 
         decoration: InputDecoration(
-          labelText: "Name: "+ "${user.displayName}",
+         // labelText: "Name: "+ name,//"${user.displayName}",
           hintText: 'Enter new name',
           border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(20.0)
@@ -206,7 +205,8 @@ class _EditProfileState extends State<EditProfile> {
           },
 
           decoration: InputDecoration(
-            labelText: 'Current Password',
+            labelText:// 'Current Password'+
+             password,
             border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(20.0)
             ),
@@ -336,9 +336,10 @@ class _EditProfileState extends State<EditProfile> {
       children: <Widget>[
         CircleAvatar(
           radius: 80.0,
-          backgroundImage: _image == null
-              ? AssetImage( "images/my3.jpg" )
-              : FileImage( File( _image.path ) ),
+          backgroundImage: proPic == ""
+              ? AssetImage( "images/avatar.png" )
+              : NetworkImage(proPic),
+        //  FileImage( File( _image.path ) ),
         ),
         Positioned(
           bottom: 20.0,

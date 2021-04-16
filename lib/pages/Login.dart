@@ -1,3 +1,4 @@
+import 'package:econsultent/pages/reset.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'SignUp.dart';
@@ -160,31 +161,26 @@ class _LoginState extends State<Login> {
 
                           ),
                         ),
+
                         Container(
-
                           child: TextFormField(
-
                               validator: (input)
                               {
                                 if(input.length < 6)
-
                                   return 'Provide Minimum 6 Character';
                               },
-
                               decoration: InputDecoration(
-
                                 labelText: 'Password',
                                 prefixIcon:Icon(Icons.lock),
                               ),
                               obscureText: true,
-
-
                               onSaved: (input) => _password = input
-
-
                           ),
                         ),
-                        SizedBox(height:20),
+                        Container(
+                          child: TextButton(child: Text('Forgot Password?'),onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => ResetScreen())),),
+                        ),
+                     //  SizedBox(height:5),
 
                         RaisedButton(
                           padding: EdgeInsets.fromLTRB(70,10,70,10),

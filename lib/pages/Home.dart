@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:econsultent/pages/Start.dart';
 import 'package:econsultent/pages/detail.dart';
 import 'package:econsultent/pages/EditProfile.dart';
+import 'package:econsultent/pages/notification.dart';
 
 import 'package:econsultent/utils/custom_icons_icons.dart';
 import 'package:econsultent/utils/he_color.dart';
@@ -26,7 +27,7 @@ class Constants{
 
   static const List<String> choices = <String>[
     EditProfile,
-    SignOut
+    SignOut,
   ];
 }
 
@@ -52,7 +53,7 @@ class _HomePageState extends State<HomePage> {
       padding: EdgeInsets.only(left: 20.0, right: 20.0, top: 10, bottom: 10),
       height: 150,
       decoration: BoxDecoration(
-          color: Colors.greenAccent,
+          color: Colors.blue[100],
           borderRadius: BorderRadius.all(
             Radius.circular(30),
           )),
@@ -234,6 +235,24 @@ class _HomePageState extends State<HomePage> {
      // body: list(),
       body: Column(
         children: [
+          SizedBox(
+            height: 15.0,
+          ),
+        RaisedButton(
+          color: Colors.blueAccent,
+          shape: RoundedRectangleBorder(
+              borderRadius:
+              BorderRadius.circular( 20 ) ),
+          onPressed: () {
+            Navigator.push(
+            context, MaterialPageRoute( builder: (context) => Notifications() ) );
+          },
+          child: Text( "View your schedule",
+              style: TextStyle(
+                  fontSize: 18,
+                  letterSpacing: 1.6,
+                  color: Colors.white ) ),
+        ),
           SizedBox(
             height: 15.0,
           ),

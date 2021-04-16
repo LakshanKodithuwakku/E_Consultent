@@ -1,3 +1,4 @@
+import 'package:econsultent/pages/review.dart';
 import 'package:econsultent/utils/he_color.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -38,11 +39,12 @@ class _DetailState extends State<Detail> {
   @override
   void initState(){
     super.initState();
-    _ref = FirebaseDatabase.instance.reference().child('Consultants');
+   // _ref = FirebaseDatabase.instance.reference().child('Consultants');
     getConsultantDetail();
   }
 
   getConsultantDetail() async{
+    _ref = FirebaseDatabase.instance.reference().child('Consultants');
     DataSnapshot snapshot = await _ref.child(widget.consultantKey).once();
 
     Map Consultants = snapshot.value;
@@ -137,6 +139,15 @@ class _DetailState extends State<Detail> {
                   ),
                   SizedBox(
                     height: 32,
+                  ),
+                  SizedBox(
+                    height: 91,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        reviewButton(),
+                      ],
+                    ),
                   ),
                   SizedBox(
                     height: 91,
@@ -358,6 +369,30 @@ class _DetailState extends State<Detail> {
       }
     }
   }
+
+  /// **********************************************
+  /// SHOW REVIEW BUTTON
+  /// **********************************************
+  reviewButton() {
+    return RaisedButton(
+      padding: EdgeInsets.fromLTRB( 70, 10, 70, 10 ),
+      onPressed: () {
+        Navigator.push(context, MaterialPageRoute(builder: (context) =>Review(consultentId: consultentId,) ) );
+      },
+      child: Text( 'SHOW REVIEW', style: TextStyle(
+          color: Colors.white,
+          fontSize: 20.0,
+          fontWeight: FontWeight.bold
+      )
+      ),
+      color: Colors.blueAccent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular( 20.0 ),
+      ),
+    );
+  }
+  /// ***********SHOW REVIEW BUTTON***********************
+
 
   /// **********************************************
   /// BOOK BUTTON

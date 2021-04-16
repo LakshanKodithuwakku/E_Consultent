@@ -16,12 +16,13 @@ class MyDropDown extends StatefulWidget {
   @override
   _MyDropDownState createState() => _MyDropDownState();
 }
-String p1,p2,p3,p4,p5,p6;
+String p1,p2,p3,p4,p5,p6,fname,lname;
 class _MyDropDownState extends State<MyDropDown>{
   /// *******************************************************
   /// GET PRICE DETAILS
   /// *******************************************************
-  DatabaseReference _ref;
+  DatabaseReference _ref,_reff;
+
   @override
   void initState() {
     super.initState( );
@@ -30,6 +31,17 @@ class _MyDropDownState extends State<MyDropDown>{
     time = TimeOfDay.now( );
     _ref = FirebaseDatabase.instance.reference( ).child( 'Price' );
     getPrice( );
+    getConsultantDetail();
+  }
+
+  getConsultantDetail() async{
+    _reff = FirebaseDatabase.instance.reference().child('Consultants');
+    DataSnapshot snapshot = await _reff.child(consultentId).once();
+
+    Map Consultants = snapshot.value;
+    fname = Consultants['firstName'];
+    lname = Consultants['secondName'];
+    print (fname);
   }
 
   getPrice() async{
@@ -334,7 +346,7 @@ class _MyDropDownState extends State<MyDropDown>{
   /// ******************************************************
   /// create a random number
   /// ******************************************************
-  String CreateCryptoRandomString([int length = 32]) {
+  String CreateCryptoRandomString([int length = 8]) {
     final Random _random = Random.secure();
     var values = List<int>.generate(length, (i) => _random.nextInt(256));
     return base64Url.encode(values);
@@ -346,21 +358,34 @@ class _MyDropDownState extends State<MyDropDown>{
   /// ******************************************************
   final FirebaseDatabase database = FirebaseDatabase.instance;
   void _savePrice(){
-    database.reference().child("Client").
+    /*database.reference().child("Client").
     child("${user.uid}").child("booking").child(CreateCryptoRandomString()).set({
       "amount" : price,
       "clientID" : "${user.uid}",
       "selectedtype" : selectedtype,
       "selectedduration" : selectedduration,
       "consultentId" : consultentId,
+    });*/
+    String no = CreateCryptoRandomString();
+    database.reference().child("general_user").
+    child("${user.uid}").child("booking").child(no).set({
+      "amount" : price,
+      "consultentId" : consultentId,
+      "consultentName" : fname+" "+lname,
+      "selectedtype" : selectedtype,
+      "selectedduration" : selectedduration,
+      "date" : pickedDate.year.toString()+"-"+pickedDate.month.toString().padLeft(2,'0')+"-"
+          +pickedDate.day.toString().padLeft(2,'0'),
+      "startTime" : time.hour.toString().padLeft(2,'0')+":"+time.minute.toString().padLeft(2,'0'),
     });
     database.reference().child("Consultants").
-    child(consultentId).child("meetings").child(CreateCryptoRandomString()).set({
+    child(consultentId).child("meetings").child(no).set({
       "amount" : price,
       "clientID" : "${user.uid}",
       "selectedtype" : selectedtype,
       "selectedduration" : selectedduration,
-      "date" : pickedDate.year.toString()+"-"+pickedDate.month.toString().padLeft(2,'0')+"-"+pickedDate.day.toString().padLeft(2,'0'),
+      "date" : pickedDate.year.toString()+"-"+pickedDate.month.toString().padLeft(2,'0')+"-"
+          +pickedDate.day.toString().padLeft(2,'0'),
       "startTime" : time.hour.toString().padLeft(2,'0')+":"+time.minute.toString().padLeft(2,'0'),
     });
 

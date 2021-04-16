@@ -1,3 +1,6 @@
+import 'package:econsultent/pages/detail.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_credit_card/credit_card_widget.dart';
 import 'package:econsultent/services/payment-service.dart';
@@ -5,13 +8,38 @@ import 'package:stripe_payment/stripe_payment.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 
 class ExistingCardsPage extends StatefulWidget {
-  ExistingCardsPage({Key key}) : super(key: key);
+  String meetingId;
+  ExistingCardsPage({this.meetingId});
+
+ // ExistingCardsPage({Key key}) : super(key: key);
 
   @override
   ExistingCardsPageState createState() => ExistingCardsPageState();
 }
 
 class ExistingCardsPageState extends State<ExistingCardsPage> {
+
+  String consultentId;
+  @override
+  void initState() {
+    super.initState();
+    getUserID();
+    getConsultantDetail();
+  }
+
+  //-------------------------------get User id
+  String id;
+  FirebaseUser user;
+  Future<void> getUserID() async {
+    final FirebaseUser userData = await FirebaseAuth.instance.currentUser();
+    setState(() {
+      user = userData;
+      id = userData.uid.toString();
+    });
+  }
+
+  //------------------------------------------
+
   List cards = [{
     'cardNumber': '4242424242424242',
     'expiryDate': '04/24',
@@ -51,6 +79,10 @@ class ExistingCardsPageState extends State<ExistingCardsPage> {
         )
       ).closed.then((_) {
         Navigator.pop(context);
+        print(widget.meetingId);
+        print(id);
+        print("chiku");
+        _savePrice();
       });
   }
 
@@ -83,4 +115,40 @@ class ExistingCardsPageState extends State<ExistingCardsPage> {
       ),
     );
   }
+
+  DatabaseReference _ref;
+  getConsultantDetail() async{
+    await getUserID();
+    _ref = FirebaseDatabase.instance.reference().child('general_user').child(id).child("booking");
+    DataSnapshot snapshot = await _ref.child(widget.meetingId).once();
+
+    Map booking = snapshot.value;
+    consultentId = booking['consultentId'];
+    print (consultentId);
+  }
+
+  /// ******************************************************
+  /// SEND TO DATABASE
+  /// ******************************************************
+  final FirebaseDatabase database = FirebaseDatabase.instance;
+  void _savePrice(){
+    database.reference().child("general_user").
+    child(id).child("booking").child(widget.meetingId).update({
+      "pay" : 'true',
+    });
+    database.reference().child("Consultants").
+    child(consultentId).child("acceptedmeetings").child(widget.meetingId).update({
+      "pay" : 'true',
+    });
+
+    setState(() {
+      database.reference().child("Client").once().then((DataSnapshot snapshot){
+        Map<dynamic, dynamic> data = snapshot.value;
+        print("Value: $data");
+      });
+    });
+  }
+/// ****************SEND TO DATABASE*****************
+
+
 }

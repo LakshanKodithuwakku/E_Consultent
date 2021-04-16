@@ -3,12 +3,17 @@ import 'package:econsultent/services/payment-service.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:econsultent/pages/notification.dart';
 
 import 'Home.dart';
 import 'existing-cards.dart';
+import 'notification.dart';
 
 class PaymentPage extends StatefulWidget {
-  PaymentPage({Key key}) : super(key: key);
+  String meetingId ;
+  PaymentPage({this.meetingId});
+
+//  PaymentPage({Key key}) : super(key: key);
 
   @override
   PaymentPageState createState() => PaymentPageState();
@@ -50,7 +55,8 @@ class PaymentPageState extends State<PaymentPage> {
         break;
       case 1:
        // Navigator.pushNamed(context, '/existing-cards');
-        Navigator.push(context, MaterialPageRoute(builder: (context)=> ExistingCardsPage()));
+        Navigator.push(context, MaterialPageRoute(builder: (context)=> ExistingCardsPage(meetingId: widget.meetingId,)));
+        print(widget.meetingId);
         break;
     }
   }
@@ -86,7 +92,7 @@ class PaymentPageState extends State<PaymentPage> {
         leading: IconButton(
             icon: Icon(Icons.arrow_back,),
             onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context)=> HomePage()));
+              Navigator.push(context, MaterialPageRoute(builder: (context)=> Notifications()));
             }
         ),
       ),

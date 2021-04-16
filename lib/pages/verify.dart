@@ -1,6 +1,5 @@
-import 'dart:async';
+/*import 'dart:async';
 
-//import 'package:econsultent/pages/home_page.dart';
 import 'package:econsultent/pages/Home.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -11,17 +10,16 @@ class VerifyScreen extends StatefulWidget {
 }
 
 class _VerifyScreenState extends State<VerifyScreen> {
-  final auth =FirebaseAuth.instance;
-  FirebaseUser user;
+  final auth = FirebaseAuth.instance;
+  User user;
   Timer timer;
 
   @override
   void initState() {
-    user =auth.currentUser() as FirebaseUser;
-    //currentUser();
+    user = auth.currentUser;
     user.sendEmailVerification();
 
-    Timer.periodic(Duration(seconds: 5), (timer) {
+    timer = Timer.periodic(Duration(seconds: 5), (timer) {
       checkEmailVerified();
     });
     super.initState();
@@ -36,20 +34,22 @@ class _VerifyScreenState extends State<VerifyScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(child: Text('An email has been sent to ${user.email} please verify'),),
+      body: Center(
+        child: Text(
+            'An email has been sent to ${user.email} please verify'),
+      ),
     );
   }
 
   Future<void> checkEmailVerified() async {
-    user = auth.currentUser as FirebaseUser;
+    user = auth.currentUser;
     await user.reload();
-    if(user.isEmailVerified){
+    if (user.emailVerified) {
       timer.cancel();
-      Navigator.of(context)
-          .pushReplacement(MaterialPageRoute(builder:(context) => HomePage()));
+      Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => HomePage()));
     }
   }
-}
-
+}*/
 
 
