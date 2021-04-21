@@ -45,6 +45,7 @@ dependencies:
   agora_rtm: ^0.9.14
   flutter_chat_bubble: ^1.0.2
   fluttertoast: ^8.0.3
+  get_it: ^6.1.1
 
 dev_dependencies:
   flutter_test:

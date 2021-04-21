@@ -1,5 +1,6 @@
 import 'package:econsultent/pages/review.dart';
 import 'package:econsultent/utils/he_color.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:econsultent/pages/Booking.dart';
@@ -506,6 +507,18 @@ class _MultiSelectDialogState<V> extends State<MultiSelectDialog<V>> {
     );
   }
 
+  //--------------------Retrive user id from firebase
+  FirebaseUser user;
+  String id;
+  Future<void> getUserID() async {
+    final FirebaseUser userData = await FirebaseAuth.instance.currentUser();
+    setState(() {
+      user = userData;
+      id = userData.uid.toString();
+    });
+  }
+  //------------------------------------------------------
+
   /// ******************************************************
   /// SEND TO DATABASE
   /// ******************************************************
@@ -513,7 +526,7 @@ class _MultiSelectDialogState<V> extends State<MultiSelectDialog<V>> {
   void _incrementCounter(){
     database.reference().child("Report").
     child(consultentId).child(_no.toString()).set({
-      "General_User_Id" : "2apJ7C4ef8ZQGkJmLC0m5N1IhgX0",
+      "General_User_Id" : id,
      "Reason" : myList[0] +" "+ myList[1] +" "+ myList[2]
     });
     _no++;

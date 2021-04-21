@@ -34,9 +34,9 @@ class _SearchConsultantState extends State<SearchConsultant> {
     return Container(
       margin: EdgeInsets.symmetric(vertical: 10),
       padding: EdgeInsets.only(left: 20.0, right: 20.0, top: 10, bottom: 10),
-      height: 140,
+      height: 130,
       decoration: BoxDecoration(
-          color: Colors.greenAccent,
+          color: Colors.blue[100],
           borderRadius: BorderRadius.all(
             Radius.circular(30),
           )),
@@ -161,7 +161,7 @@ class _SearchConsultantState extends State<SearchConsultant> {
       /// Dropdown menu
       /// ***********************************
       leading: IconButton(
-        icon: Icon(Icons.arrow_back_ios),
+        icon: Icon(Icons.arrow_back),
         onPressed: () {
           Navigator.of(context).push(
               MaterialPageRoute(builder: (BuildContext context) => Search()));
@@ -181,6 +181,7 @@ class _SearchConsultantState extends State<SearchConsultant> {
           child: SizedBox(
             height: 400.0,
             child: FirebaseAnimatedList(
+              reverse: true,
               query: _ref,
               itemBuilder: (BuildContext context, DataSnapshot snapshot,
                   Animation<double> animation, int index) {

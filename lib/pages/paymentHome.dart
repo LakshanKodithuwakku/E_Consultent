@@ -21,9 +21,9 @@ class PaymentPage extends StatefulWidget {
 
 class PaymentPageState extends State<PaymentPage> {
   final mref = FirebaseDatabase.instance;
-  //get the client Id
-  String cid = "hbhsbdjand821e89yhd8";
 
+  //get the client Id
+  String cid = "";
   Future<void> getUserID() async {
     final FirebaseUser userData = await FirebaseAuth.instance.currentUser();
     setState(() {
@@ -32,20 +32,22 @@ class PaymentPageState extends State<PaymentPage> {
   }
 
   //get booking amount
-  int payAmount;
+  String payAmount;
   Future<void> getAmount() async {
+    await getUserID();
     final ref = mref
         .reference()
-        .child('Client')
+        .child('general_user')
         .child('$cid')
         .child('booking')
-        .child('1');
+        .child(widget.meetingId);
     await ref.child('amount').once().then((DataSnapshot snapshot) {
       setState(() {
         payAmount = snapshot.value;
       });
     });
     print(payAmount);
+    print(widget.meetingId);
   }
 
   onItemPress(BuildContext context, int index) async {
@@ -78,6 +80,7 @@ class PaymentPageState extends State<PaymentPage> {
 
   @override
   void initState() {
+    getUserID();
     super.initState();
     StripeService.init();
     getAmount(); //method to call get amount

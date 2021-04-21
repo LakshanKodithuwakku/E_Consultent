@@ -5,8 +5,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:econsultent/pages/Home.dart';
-import 'package:econsultent/pages/paymentHome.dart';
 import 'package:econsultent/pages/detail.dart';
+
+import 'notification.dart';
 
 
 class MyDropDown extends StatefulWidget {
@@ -226,7 +227,7 @@ class _MyDropDownState extends State<MyDropDown>{
   Widget date(){
     return
           ListTile(
-            title: Text("Date: ${pickedDate.year}, ${pickedDate.month}, ${pickedDate.day}",
+            title: Text("Date: ${pickedDate.year}/ "+pickedDate.month.toString().padLeft(2,'0')+"/"+ pickedDate.day.toString().padLeft(2,'0'),
               style: TextStyle(
               color: Colors.black,
               fontSize: 18,
@@ -240,8 +241,8 @@ class _MyDropDownState extends State<MyDropDown>{
     DateTime date = await showDatePicker(
         context: context,
         initialDate: pickedDate,
-        firstDate: DateTime(DateTime.now().year-5),
-        lastDate: DateTime(DateTime.now().year+5),
+        firstDate: DateTime(DateTime.now().year),//.now().year),
+        lastDate: DateTime(DateTime.now().year+1),
     );
 
     if(date != null)
@@ -257,7 +258,7 @@ class _MyDropDownState extends State<MyDropDown>{
   Widget timebar(){
     return
       ListTile(
-        title: Text("Time: ${time.hour}, ${time.minute}",
+        title: Text("Time:"+time.hour.toString().padLeft(2,'0')+" : "+time.minute.toString().padLeft(2,'0'),
           style: TextStyle(
             color: Colors.black,
             fontSize: 18,
@@ -300,7 +301,7 @@ class _MyDropDownState extends State<MyDropDown>{
           /// Add to database and redirect payment
           onTap: () => {
             _savePrice(),
-            Navigator.push(context, MaterialPageRoute(builder: (context)=> PaymentPage(),)),
+            Navigator.push(context, MaterialPageRoute(builder: (context)=> Notifications(),)),
           },
 
           child: Container(
@@ -358,14 +359,6 @@ class _MyDropDownState extends State<MyDropDown>{
   /// ******************************************************
   final FirebaseDatabase database = FirebaseDatabase.instance;
   void _savePrice(){
-    /*database.reference().child("Client").
-    child("${user.uid}").child("booking").child(CreateCryptoRandomString()).set({
-      "amount" : price,
-      "clientID" : "${user.uid}",
-      "selectedtype" : selectedtype,
-      "selectedduration" : selectedduration,
-      "consultentId" : consultentId,
-    });*/
     String no = CreateCryptoRandomString();
     database.reference().child("general_user").
     child("${user.uid}").child("booking").child(no).set({

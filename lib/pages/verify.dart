@@ -1,4 +1,4 @@
-/*import 'dart:async';
+import 'dart:async';
 
 import 'package:econsultent/pages/Home.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -11,12 +11,12 @@ class VerifyScreen extends StatefulWidget {
 
 class _VerifyScreenState extends State<VerifyScreen> {
   final auth = FirebaseAuth.instance;
-  User user;
+  FirebaseUser user;
   Timer timer;
 
   @override
   void initState() {
-    user = auth.currentUser;
+    user = auth.currentUser as FirebaseUser;
     user.sendEmailVerification();
 
     timer = Timer.periodic(Duration(seconds: 5), (timer) {
@@ -42,14 +42,31 @@ class _VerifyScreenState extends State<VerifyScreen> {
   }
 
   Future<void> checkEmailVerified() async {
-    user = auth.currentUser;
+    user = auth.currentUser as FirebaseUser;
     await user.reload();
-    if (user.emailVerified) {
+    if (user.isEmailVerified) {
       timer.cancel();
       Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => HomePage()));
     }
   }
-}*/
+
+  /// ***********************************************
+  /// EMAIL VERIFICATION
+  /// ***********************************************
+  void sendVerificationEmail() async {
+    FirebaseUser firebaseUser = await FirebaseAuth.instance.currentUser();
+    //User firebaseUser = FirebaseAuth.instance.currentUser;
+    await firebaseUser.sendEmailVerification();
+
+   /* Fluttertoast.showToast(
+        msg: "email verifcation link has sent to your email.");
+*/
+    /*Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => HomePage()),
+            (Route<dynamic> route) => false);*/
+  }
+}
 
 

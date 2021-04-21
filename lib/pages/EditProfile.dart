@@ -1,11 +1,12 @@
+import 'package:econsultent/passwordChange/user_controller.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:econsultent/pages/Home.dart';
 import 'dart:io';
 import 'package:firebase_database/firebase_database.dart';
-//import 'package:firebase_storage/firebase_storage.dart';
-//import 'package:path/path.dart' as path;
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:path/path.dart' as path;
 
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -18,8 +19,12 @@ String a;
 class _EditProfileState extends State<EditProfile> {
   TextEditingController _nameController;
 
+  bool showCurrentPassword = true;
+  bool showPassword = true;
+  bool showConformPassword = true;
+
   File _image;
-  String _name, _password;
+  String _name, _password, _pathImg = "";
   String name="",proPic="",password;
 
   DatabaseReference _ref;
@@ -47,8 +52,6 @@ class _EditProfileState extends State<EditProfile> {
     setState(() {
       user = userData;
       id = userData.uid.toString();
-     // password = user.pa.toString();
-      print(userData.uid);
     });
   }
 //------------------------------------------------------
@@ -62,30 +65,55 @@ class _EditProfileState extends State<EditProfile> {
     DataSnapshot snapshot = await _ref.child("$id").once();
     Map general_user = snapshot.value;
     _nameController.text = general_user['name'];
-    name = general_user['name'];
-    print(name);
+    _name = general_user['name'];
+    print(_name);
     proPic = general_user['proPicURL'];
     print(proPic);
   }
   /// *****************GET USER DETAILS********************
 
+  /// **********************************************
+  /// ProPic upload to firebase storage
+  /// **********************************************
+  Future<String> upload(BuildContext context) async {
+    String imageName = path.basename(_image.path);
+    StorageReference firebaseStorageRef =
+    FirebaseStorage.instance.ref().child(imageName);
+    StorageUploadTask uploadTask = firebaseStorageRef.putFile(_image);
+    StorageTaskSnapshot taskSnapshot = await uploadTask.onComplete;
+
+    // Once the image is uploaded to firebase get the download link.
+    //String
+    proPic = await taskSnapshot.ref.getDownloadURL();
+    print(proPic);
+    return proPic;
+  }
+
   /// ******************************************************
   /// SEND TO DATABASE
   /// ******************************************************
   final FirebaseDatabase database = FirebaseDatabase.instance;
-  void _userUpdate(){
-    database.reference().child("general_user").
-    child("${user.uid}").update({
-      "email" : "${user.email}",
-      "name" : _name,
-    });
-
+  Future<void> _userUpdate() async {
+    if(_image != null) {
+      database.reference( ).child( "general_user" ).
+      child( "${user.uid}" ).update( {
+        "name": _name,
+        "proPic": _pathImg,
+        "proPicURL": await upload( context )
+      } );
+    }else{
+      database.reference( ).child( "general_user" ).
+      child( "${user.uid}" ).update( {
+        "name": _name,
+      } );
+    }
     setState(() {
       database.reference().child("general_user").once().then((DataSnapshot snapshot){
         Map<dynamic, dynamic> data = snapshot.value;
         print("Value: $data");
       });
     });
+
   }
   /// ****************SEND TO DATABASE*****************
 
@@ -129,7 +157,8 @@ class _EditProfileState extends State<EditProfile> {
                       children: <Widget>[
                         displayName(),
                         SizedBox( height: 20 ),
-                        currentPassword(),
+                        test(),
+              /*          currentPassword(),
                         SizedBox( height: 20 ),
                         newPassword(),
                         SizedBox( height: 20 ),
@@ -143,7 +172,7 @@ class _EditProfileState extends State<EditProfile> {
                             SaveButton(),
                           ],
                         )
-
+*/
                       ],
                     ),
 
@@ -174,7 +203,6 @@ class _EditProfileState extends State<EditProfile> {
         },
 
         decoration: InputDecoration(
-         // labelText: "Name: "+ name,//"${user.displayName}",
           hintText: 'Enter new name',
           border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(20.0)
@@ -205,14 +233,19 @@ class _EditProfileState extends State<EditProfile> {
           },
 
           decoration: InputDecoration(
-            labelText:// 'Current Password'+
-             password,
+            labelText: 'Current Password',
             border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(20.0)
             ),
             prefixIcon: Icon( Icons.lock ),
+            suffixIcon: IconButton(
+              icon: Icon(Icons.visibility),
+              onPressed: () => setState((){
+                showCurrentPassword = ! showCurrentPassword;
+              }),
+            ),
           ),
-          obscureText: true,
+          obscureText: showCurrentPassword,
 
           onChanged: (val) {
             _password = val;
@@ -241,8 +274,14 @@ class _EditProfileState extends State<EditProfile> {
                 borderRadius: BorderRadius.circular(20.0)
             ),
             prefixIcon: Icon( Icons.lock ),
+            suffixIcon: IconButton(
+              icon: Icon(Icons.visibility),
+              onPressed: () => setState((){
+                showPassword = ! showPassword;
+              }),
+            ),
           ),
-          obscureText: true,
+          obscureText: showPassword,
 
           onChanged: (val) {
             _password = val;
@@ -271,8 +310,14 @@ class _EditProfileState extends State<EditProfile> {
                 borderRadius: BorderRadius.circular(20.0)
             ),
             prefixIcon: Icon( Icons.lock ),
+            suffixIcon: IconButton(
+              icon: Icon(Icons.visibility),
+              onPressed: () => setState((){
+                showConformPassword = ! showConformPassword;
+              }),
+            ),
           ),
-          obscureText: true,
+          obscureText: showConformPassword,
 
           onChanged: (val) {
             _password = val;
@@ -290,6 +335,7 @@ class _EditProfileState extends State<EditProfile> {
       padding: EdgeInsets.only(left:45,right:45),
 
       onPressed: (){
+        upload(context);
         _userUpdate();
         Navigator.push(context, MaterialPageRoute(builder: (context)=> HomePage()));
       },
@@ -336,10 +382,9 @@ class _EditProfileState extends State<EditProfile> {
       children: <Widget>[
         CircleAvatar(
           radius: 80.0,
-          backgroundImage: proPic == ""
-              ? AssetImage( "images/avatar.png" )
-              : NetworkImage(proPic),
-        //  FileImage( File( _image.path ) ),
+          backgroundImage: _image == null
+              ? NetworkImage(proPic)
+              : FileImage( File( _image.path )),
         ),
         Positioned(
           bottom: 20.0,
@@ -418,8 +463,151 @@ class _EditProfileState extends State<EditProfile> {
     );
     setState( () {
       _image = image;
-      //_pathImg = path.basename(_image.path);
+      _pathImg = path.basename(_image.path);
     } );
   }
+
+
+  Widget test(){
+    return Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          SizedBox(height: 20.0),
+          Flexible(
+            child: Form(
+              key: _formKey,
+              child: Column(
+                children: <Widget>[
+                  Text(
+                    "Change Password",
+                    style: TextStyle(
+                        fontSize: 25,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.blueAccent),
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  TextFormField(
+                    decoration: InputDecoration(
+                      fillColor: Colors.white,
+                      labelText: 'Password',
+                      enabledBorder: OutlineInputBorder(
+                          borderSide:
+                          BorderSide(color: Colors.white, width: 3.0)),
+                      focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                              color: Colors.pinkAccent, width: 2.0)),
+                      labelStyle: TextStyle(
+                          color: Colors.black87,
+                          fontSize: 15,
+                          fontFamily: 'AvenirLight'),
+                      hintText: "Password",
+                      errorText: checkCurrentPasswordValid
+                          ? null
+                          : "Please double check your current password",
+                    ),
+                    controller: _passwordController,
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  TextFormField(
+                    decoration: InputDecoration(
+                        fillColor: Colors.white,
+                        labelText: 'New Password',
+                        enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                                color: Colors.white, width: 3.0)),
+                        focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                                color: Colors.pinkAccent, width: 2.0)),
+                        labelStyle: TextStyle(
+                            color: Colors.black87,
+                            fontSize: 15,
+                            fontFamily: 'AvenirLight'),
+                        hintText: "New Password"),
+                    controller: _newPasswordController,
+                    obscureText: true,
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  TextFormField(
+                    decoration: InputDecoration(
+                      fillColor: Colors.white,
+                      labelText: 'Repeat Password',
+                      enabledBorder: OutlineInputBorder(
+                          borderSide:
+                          BorderSide(color: Colors.white, width: 3.0)),
+                      focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                              color: Colors.pinkAccent, width: 2.0)),
+                      labelStyle: TextStyle(
+                          color: Colors.black87,
+                          fontSize: 15,
+                          fontFamily: 'AvenirLight'),
+                      hintText: "Repeat Password",
+                    ),
+                    obscureText: true,
+                    controller: _repeatPasswordController,
+                    validator: (value) {
+                      return _newPasswordController.text == value           //check repeat password previous entered password
+                          ? null
+                          : "Please validate your entered password";
+                    },
+                  )
+                ],
+              ),
+            ),
+          ),
+          SizedBox(height: 10),
+          RaisedButton(
+            color: Colors.blueAccent,
+            padding: EdgeInsets.symmetric(horizontal: 10),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(5)),
+            onPressed: () async {
+              //      var auth = locator.get<UserController>();
+              UserController auth = UserController();            //creat a object of User controller class
+              checkCurrentPasswordValid = await auth
+                  .validateCurrentPassword(_passwordController.text);          //true or false
+
+              setState(() {});
+
+              if (_formKey.currentState.validate() &&
+                  checkCurrentPasswordValid) {
+                auth.updateUserPassword(_newPasswordController.text);
+                Navigator.pop(context);
+              }
+            },
+            child: Text("Save Password",
+                style: TextStyle(
+                    fontSize: 14, letterSpacing: 1, color: Colors.black)),
+          ),
+        ],
+      ),
+    );
+  }
+  var _displayNameController = TextEditingController();
+  var _passwordController = TextEditingController();
+  var _newPasswordController = TextEditingController();
+  var _repeatPasswordController = TextEditingController();
+
+  var _formKey = GlobalKey<FormState>();
+
+  bool checkCurrentPasswordValid = true;
+
+  @override
+  void dispose() {
+    _displayNameController.dispose();
+    _passwordController.dispose();
+    _newPasswordController.dispose();
+    _repeatPasswordController.dispose();
+    super.dispose();
+  }
+
 
 }

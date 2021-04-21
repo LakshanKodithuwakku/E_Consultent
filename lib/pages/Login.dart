@@ -1,6 +1,7 @@
 import 'package:econsultent/pages/reset.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'SignUp.dart';
 import 'package:econsultent/pages/Start.dart';
 //import 'package:econsultent/pages/home_page.dart';
@@ -12,7 +13,7 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
-
+  bool showPassword = true;
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -23,16 +24,19 @@ class _LoginState extends State<Login> {
   {
 
     _auth.onAuthStateChanged.listen((user) {
+      if(user!= null){
+        if(user.isEmailVerified )
+        {
+          print(user);
 
-      if(user!= null)
-      {
-        print(user);
+          Navigator.push(context, MaterialPageRoute(
 
-        Navigator.push(context, MaterialPageRoute(
-
-            builder: (context)=>HomePage()));
+              builder: (context)=>HomePage()));
+        }else{
+          Fluttertoast.showToast(
+              msg: "email verifcation link has sent to your email.");
+        }
       }
-
     });
 
 
@@ -48,9 +52,7 @@ class _LoginState extends State<Login> {
   {
     if(_formKey.currentState.validate())
     {
-
       _formKey.currentState.save();
-
       try{
         FirebaseUser user = (await _auth.signInWithEmailAndPassword(email: _email, password: _password)) as FirebaseUser;
       }
@@ -116,6 +118,10 @@ class _LoginState extends State<Login> {
           ),),
 
         body: SingleChildScrollView(
+          /*padding: EdgeInsets.symmetric(
+            vertical: 20.0,
+            horizontal: 20.0,
+          ),*/
           child: Container(
 
             child: Column(
@@ -131,7 +137,10 @@ class _LoginState extends State<Login> {
                 ),
 
                 Container(
-
+                  padding: EdgeInsets.symmetric(
+                    vertical: 20.0,
+                    horizontal: 20.0,
+                  ),
                   child: Form(
 
                     key: _formKey,
@@ -151,8 +160,10 @@ class _LoginState extends State<Login> {
                               },
 
                               decoration: InputDecoration(
-
                                   labelText: 'Email',
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(20.0)
+                                  ),
                                   prefixIcon:Icon(Icons.email)
                               ),
 
@@ -161,7 +172,7 @@ class _LoginState extends State<Login> {
 
                           ),
                         ),
-
+                        SizedBox( height: 20, ),
                         Container(
                           child: TextFormField(
                               validator: (input)
@@ -171,9 +182,18 @@ class _LoginState extends State<Login> {
                               },
                               decoration: InputDecoration(
                                 labelText: 'Password',
+                                suffixIcon: IconButton(
+                                  icon: Icon(Icons.visibility),
+                                  onPressed: () => setState((){
+                                    showPassword = ! showPassword;
+                                  }),
+                                ),
+                                border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(20.0)
+                                ),
                                 prefixIcon:Icon(Icons.lock),
                               ),
-                              obscureText: true,
+                              obscureText: showPassword,
                               onSaved: (input) => _password = input
                           ),
                         ),
@@ -217,6 +237,7 @@ class _LoginState extends State<Login> {
 
     );
   }
+
 }
 
 

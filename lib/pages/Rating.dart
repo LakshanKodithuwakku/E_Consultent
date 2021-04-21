@@ -39,10 +39,77 @@ class _RatingsPage extends State<RatingsPage>{
     super.initState();
     this.getUser();
     getUserDetail();
+    reviewsData();
   }
+
+  //----------------------------------------------------------------------------------------------calculate ratings-pamo
+  var entries = [];
+  Future<void> getReviewNames() async {
+    final response = FirebaseDatabase.instance
+        .reference()
+        .child('Reviews')
+        .child(consultentId)
+        .once();
+
+    await response.then((DataSnapshot snapshot) {
+      Map<dynamic, dynamic> values = snapshot.value;
+      for (String key in values.keys) {
+        entries.add(key);
+      }
+    });
+    //   print(entries);
+  }
+
+  var ratings = [];
+  Future<void> getRatingValues() async {
+    final response = FirebaseDatabase.instance
+        .reference()
+        .child('Reviews')
+        .child(consultentId);
+    for (int i = 0; i < entries.length; i++) {
+      await response
+          .child('${entries[i]}')
+          .child('rating')
+          .once()
+          .then((DataSnapshot snapshot) {
+        ratings.add(snapshot.value);
+      });
+    }
+//    print(ratings);
+  }
+
+  Future<void> reviewsData() async {
+    //call from initState
+    await getReviewNames();
+    await getRatingValues();
+  }
+
+  double avgRating = 0.0;
+  Future<void> calculateAvgRatings() async {
+    int total = 0;
+    for (int i = 0; i < ratings.length; i++) {
+      total = total + ratings[i];
+    }
+    avgRating = ((total + _currentRating) / (ratings.length + 1));
+  }
+
+  final FirebaseDatabase mainref = FirebaseDatabase.instance;
+  Future<void> sendtoDatabase() async {
+    final rat = mainref.reference().child('Consultants').child(consultentId);
+    rat.child("averageRating").set(avgRating.toStringAsFixed(1));
+  }
+
+  Future<void> processCreatingAvgRating() async {
+    //call from button
+    await calculateAvgRatings();
+    await sendtoDatabase();
+  }
+  //--------------------------------------------------------------------------------------------------------
+
+
   /// *****GET GENERAL USER DETAILS*******
   DatabaseReference _ref;
-  String proPicURL;
+  String proPicURL, name;
 
   /// ******************************************************
   /// Map user data
@@ -54,6 +121,7 @@ class _RatingsPage extends State<RatingsPage>{
 
     Map general_user = snapshot.value;
     proPicURL = general_user['proPicURL'];
+    name = general_user['name'];
   }
   /// *****Map user data*******
   int _rating;
@@ -76,13 +144,14 @@ class _RatingsPage extends State<RatingsPage>{
   void _incrementCounter(){
         database.reference().child("Reviews").
         child(consultentId).child(CreateCryptoRandomString()).set({
-          "name" : "${user.displayName}",
+          "name" : name,
           "rating" : _currentRating,
           'text' : _text,
           "GUID" : "${user.uid}",
           "proPicURL" : proPicURL,
         });
-    _currentRating =0;
+        processCreatingAvgRating();
+        _currentRating =0;
     setState(() {
       database.reference().child("Reviews").once().then((DataSnapshot snapshot){
         Map<dynamic, dynamic> data = snapshot.value;
@@ -185,6 +254,7 @@ class _RatingsPage extends State<RatingsPage>{
           onTap: () => {
             _incrementCounter(),
             getUser(),
+         //   processCreatingAvgRating(),
           Navigator.push(context, MaterialPageRoute(builder: (context)=> Detail())),
           },
 

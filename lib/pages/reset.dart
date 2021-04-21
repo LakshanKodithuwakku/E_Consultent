@@ -39,6 +39,10 @@ class _ResetScreenState extends State<ResetScreen> {
                 ),
 
                 Container(
+                  padding: EdgeInsets.symmetric(
+                    vertical: 20.0,
+                    horizontal: 20.0,
+                  ),
                   child: Form(
                     key: _formKey,
                     child: Column(
@@ -54,6 +58,9 @@ class _ResetScreenState extends State<ResetScreen> {
                               keyboardType: TextInputType.emailAddress,
                               decoration: InputDecoration(
                                   labelText: 'Email',
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(20.0)
+                                  ),
                                   prefixIcon:Icon(Icons.email)
                               ),
 

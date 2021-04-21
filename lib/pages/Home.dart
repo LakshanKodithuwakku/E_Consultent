@@ -40,9 +40,10 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     // TODO: implement noSuchMethod
     super.initState();
-    _ref = FirebaseDatabase.instance.reference()
-        .child('Consultants')
-        .orderByChild('averageRating');
+      _ref = FirebaseDatabase.instance.reference()
+          .child('Consultants')
+          .orderByChild('averageRating');
+
     this.checkAuthentification();
   }
 
@@ -51,7 +52,7 @@ class _HomePageState extends State<HomePage> {
     return Container(
       margin: EdgeInsets.symmetric(vertical: 10),
       padding: EdgeInsets.only(left: 20.0, right: 20.0, top: 10, bottom: 10),
-      height: 150,
+      height: 130,
       decoration: BoxDecoration(
           color: Colors.blue[100],
           borderRadius: BorderRadius.all(
@@ -150,14 +151,14 @@ class _HomePageState extends State<HomePage> {
                             fontWeight: FontWeight.w600),),
                       ],
                       ),
-                      SizedBox(height: 6,),
+                   /*   SizedBox(height: 6,),
                       Row(children: [
                         SizedBox(width: 6,),
                         Text(Consultants['subField'],style: TextStyle(fontSize: 16,
                             color: Theme.of(context).primaryColor,
                             fontWeight: FontWeight.w600),),
                       ],
-                      ),
+                      ),*/
                     ],
                   ),
                   SizedBox(
@@ -324,6 +325,7 @@ class _HomePageState extends State<HomePage> {
         child: SizedBox(
           height: 400.0,
           child: FirebaseAnimatedList(
+            reverse: true,
             query: _ref,
             itemBuilder: (BuildContext context, DataSnapshot snapshot,
                 Animation<double> animation, int index) {

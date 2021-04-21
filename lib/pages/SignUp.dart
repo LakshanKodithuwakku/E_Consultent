@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:econsultent/pages/verify.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
@@ -18,7 +20,8 @@ class SignUp extends StatefulWidget {
 }
 
 class _SignUpState extends State<SignUp> {
-
+  bool showPassword = true;
+  bool showConformPassword = true;
   File _image;
 
   /////////
@@ -43,16 +46,44 @@ class _SignUpState extends State<SignUp> {
   checkAuthentication() async {
     _auth.onAuthStateChanged.listen( (user) async
     {
-      if (user != null) {
-        Navigator.push( context, MaterialPageRoute(
+      if (user != null ) {
+      //  await user.isEmailVerified;
+       // await user.reload();
+        timer = Timer.periodic(Duration(seconds: 20), (timer) {
+          if (user.isEmailVerified) {
+            timer.cancel();
+            Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (context) => HomePage()));
+          }else{
+            signOut();
+            Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (context) => Start()));
+          }
+        });
+       /* Navigator.push( context, MaterialPageRoute(
             builder: (context) => //VerifyScreen()));
-                HomePage( ) ) );
+                HomePage( ) ) );*/
        // await sendVerificationEmail();
       }
     }
     );
   }
+/////////////////////////////////////////////////////////
+  Timer timer;
 
+  signOut()async{
+    _auth.signOut();
+  }
+/*
+  FirebaseUser firebaseUser;
+  getData(){
+    FirebaseAuth.instance.currentUser().then((value) {
+      setState(() {
+        firebaseUser = value;
+      });
+    });
+  }*/
+///////////////////////////////////////////////////////
   @override
   void initState() {
     super.initState( );
@@ -293,8 +324,14 @@ class _SignUpState extends State<SignUp> {
                 borderRadius: BorderRadius.circular(20.0)
             ),
             prefixIcon: Icon( Icons.lock ),
+            suffixIcon: IconButton(
+              icon: Icon(Icons.visibility),
+              onPressed: () => setState((){
+                showPassword = ! showPassword;
+              }),
+            ),
           ),
-          obscureText: true,
+          obscureText: showPassword,
 
           onChanged: (val) {
             password = val;
@@ -324,8 +361,14 @@ class _SignUpState extends State<SignUp> {
                 borderRadius: BorderRadius.circular(20.0)
             ),
             prefixIcon: Icon( Icons.lock ),
+            suffixIcon: IconButton(
+              icon: Icon(Icons.visibility),
+              onPressed: () => setState((){
+                showConformPassword = ! showConformPassword;
+              }),
+            ),
           ),
-          obscureText: true,
+          obscureText: showConformPassword,
 
           onChanged: (val) {
             _password = val;

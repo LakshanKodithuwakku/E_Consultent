@@ -1,6 +1,7 @@
 import 'package:econsultent/pages/detail.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_credit_card/credit_card_widget.dart';
 import 'package:econsultent/services/payment-service.dart';
@@ -23,9 +24,17 @@ class ExistingCardsPageState extends State<ExistingCardsPage> {
   @override
   void initState() {
     super.initState();
-    getUserID();
+    getData();
     getConsultantDetail();
   }
+
+  Future<void> getData() async {
+    await getUserID();
+    _reff = FirebaseDatabase.instance.reference()
+        .child('general_user').child(id//'L5GT25FSKgQ5bURE2GjHTHPgQqN2'
+    ).child('card');
+  }
+
 
   //-------------------------------get User id
   String id;
@@ -37,22 +46,7 @@ class ExistingCardsPageState extends State<ExistingCardsPage> {
       id = userData.uid.toString();
     });
   }
-
   //------------------------------------------
-
-  List cards = [{
-    'cardNumber': '4242424242424242',
-    'expiryDate': '04/24',
-    'cardHolderName': 'Nirmani Rathnayake',
-    'cvvCode': '424',
-    'showBackView': false,
-  }, {
-    'cardNumber': '5555555566554444',
-    'expiryDate': '04/23',
-    'cardHolderName': 'Dileka Nirmani',
-    'cvvCode': '123',
-    'showBackView': false,
-  }];
 
   payViaExistingCard(BuildContext context, card) async {
     ProgressDialog dialog = new ProgressDialog(context);
@@ -82,7 +76,8 @@ class ExistingCardsPageState extends State<ExistingCardsPage> {
         print(widget.meetingId);
         print(id);
         print("chiku");
-        _savePrice();
+
+      //  _savePrice();////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
       });
   }
 
@@ -94,27 +89,52 @@ class ExistingCardsPageState extends State<ExistingCardsPage> {
       ),
       body: Container(
         padding: EdgeInsets.all(20),
-        child: ListView.builder(
-          itemCount: cards.length,
-          itemBuilder: (BuildContext context, int index) {
-            var card = cards[index];
-            return InkWell(
-              onTap: () {
-                payViaExistingCard(context, card);
-              },
-              child: CreditCardWidget(
-                cardNumber: card['cardNumber'],
-                expiryDate: card['expiryDate'], 
-                cardHolderName: card['cardHolderName'],
-                cvvCode: card['cvvCode'],
-                showBackView: false,
-              ),
-            );
-          },
+        child: list()
+      ),
+    );
+  }
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  Query _reff;
+
+  Widget _buildContactItem({Map card}){
+    return InkWell(
+      onTap: () {
+        payViaExistingCard(context, card);
+      },
+      child: CreditCardWidget(
+        cardNumber: card['cardNumber'],
+        expiryDate: card['expiryDate'],
+        cardHolderName: card['cardHolderName'],
+        cvvCode: card['cvvCode'],
+        showBackView: false,
+      ),
+    );
+  }
+
+
+  Widget list() {
+    return Expanded(
+      child: Container(
+        padding: EdgeInsets.all(10.0),
+        child: SizedBox(
+          child: FirebaseAnimatedList(
+            query: _reff,
+            itemBuilder: (BuildContext context, DataSnapshot snapshot,
+                Animation<double> animation, int index) {
+              // ignore: non_constant_identifier_names
+              Map card = snapshot.value;
+              card['key'] = snapshot.key;
+              print(card['key']);
+              return _buildContactItem(card: card);
+            },
+          ),
         ),
       ),
     );
   }
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   DatabaseReference _ref;
   getConsultantDetail() async{

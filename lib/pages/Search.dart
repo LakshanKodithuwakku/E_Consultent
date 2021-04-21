@@ -183,7 +183,7 @@ class _SearchState extends State<Search> {
       /// Dropdown menu
       /// ***********************************
       leading: IconButton(
-        icon: Icon(Icons.arrow_back_ios),
+        icon: Icon(Icons.arrow_back),
         onPressed: () {
               Navigator.of(context).push( MaterialPageRoute(builder: (BuildContext context) => HomePage()));
         },
@@ -235,7 +235,7 @@ class _SearchState extends State<Search> {
                               ),
                               Container(
                                 decoration: BoxDecoration(
-                                    color: Colors.greenAccent,
+                                    color: Colors.blue[100],
                                     borderRadius: BorderRadius.all(
                                       Radius.circular(30),
                                     )),
