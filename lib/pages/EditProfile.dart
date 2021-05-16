@@ -10,6 +10,8 @@ import 'package:path/path.dart' as path;
 
 import 'package:firebase_auth/firebase_auth.dart';
 
+import 'loading.dart';
+
 class EditProfile extends StatefulWidget {
   @override
   _EditProfileState createState() => _EditProfileState();
@@ -19,6 +21,7 @@ String a;
 class _EditProfileState extends State<EditProfile> {
   TextEditingController _nameController;
 
+  bool _loading = true;
   bool showCurrentPassword = true;
   bool showPassword = true;
   bool showConformPassword = true;
@@ -32,17 +35,20 @@ class _EditProfileState extends State<EditProfile> {
   void initState() {
     super.initState( );
     _nameController = TextEditingController();
-   // getData();
-    getUserID();
-    getUserDetails();
+    getData();
+  //  getUserID();
+  //  getUserDetails();
   }
 
- /* //-------init function can not make as asynchronous function
+  //-------init function can not make as asynchronous function
   Future<void> getData() async {
-      await getUserID();
-      await getUserDetails();
+      getUserID();
+       await getUserDetails();
+       setState(() {
+         _loading = false;
+       });
   }
-  //-----------------------------------------------*/
+  //-----------------------------------------------
 
   //--------------------Retrive user id from firebase
   FirebaseUser user;
@@ -69,6 +75,7 @@ class _EditProfileState extends State<EditProfile> {
     print(_name);
     proPic = general_user['proPicURL'];
     print(proPic);
+    _loading = false;
   }
   /// *****************GET USER DETAILS********************
 
@@ -122,7 +129,9 @@ class _EditProfileState extends State<EditProfile> {
   /// *****************************************
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return _loading
+        ? Loading()
+        :Scaffold(
 
         appBar: AppBar(title: Text("Edit Profile"),centerTitle: true,
           leading: IconButton(
@@ -157,22 +166,14 @@ class _EditProfileState extends State<EditProfile> {
                       children: <Widget>[
                         displayName(),
                         SizedBox( height: 20 ),
-                        test(),
-              /*          currentPassword(),
-                        SizedBox( height: 20 ),
-                        newPassword(),
-                        SizedBox( height: 20 ),
-                        conformNewPassword(),
-                        SizedBox( height: 70 ),
-
                         Row(mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             CancelButton(),
                             SizedBox(width: 20,),
                             SaveButton(),
                           ],
-                        )
-*/
+                        ),
+                        changePassword(),
                       ],
                     ),
 
@@ -468,7 +469,7 @@ class _EditProfileState extends State<EditProfile> {
   }
 
 
-  Widget test(){
+  Widget changePassword(){
     return Padding(
       padding: const EdgeInsets.all(20.0),
       child: Column(
@@ -494,6 +495,13 @@ class _EditProfileState extends State<EditProfile> {
                     decoration: InputDecoration(
                       fillColor: Colors.white,
                       labelText: 'Password',
+                        prefixIcon: Icon( Icons.lock ),
+                        suffixIcon: IconButton(
+                          icon: Icon(Icons.visibility),
+                          onPressed: () => setState((){
+                            showCurrentPassword = ! showCurrentPassword;
+                          }),
+                        ),
                       enabledBorder: OutlineInputBorder(
                           borderSide:
                           BorderSide(color: Colors.white, width: 3.0)),
@@ -509,6 +517,7 @@ class _EditProfileState extends State<EditProfile> {
                           ? null
                           : "Please double check your current password",
                     ),
+                    obscureText: showCurrentPassword,
                     controller: _passwordController,
                   ),
                   SizedBox(
@@ -518,6 +527,13 @@ class _EditProfileState extends State<EditProfile> {
                     decoration: InputDecoration(
                         fillColor: Colors.white,
                         labelText: 'New Password',
+                        prefixIcon: Icon( Icons.lock ),
+                        suffixIcon: IconButton(
+                          icon: Icon(Icons.visibility),
+                          onPressed: () => setState((){
+                            showPassword = ! showPassword;
+                          }),
+                        ),
                         enabledBorder: OutlineInputBorder(
                             borderSide: BorderSide(
                                 color: Colors.white, width: 3.0)),
@@ -530,7 +546,7 @@ class _EditProfileState extends State<EditProfile> {
                             fontFamily: 'AvenirLight'),
                         hintText: "New Password"),
                     controller: _newPasswordController,
-                    obscureText: true,
+                    obscureText: showPassword,
                   ),
                   SizedBox(
                     height: 10,
@@ -539,6 +555,13 @@ class _EditProfileState extends State<EditProfile> {
                     decoration: InputDecoration(
                       fillColor: Colors.white,
                       labelText: 'Repeat Password',
+                      prefixIcon: Icon( Icons.lock ),
+                      suffixIcon: IconButton(
+                        icon: Icon(Icons.visibility),
+                        onPressed: () => setState((){
+                          showConformPassword = ! showConformPassword;
+                        }),
+                      ),
                       enabledBorder: OutlineInputBorder(
                           borderSide:
                           BorderSide(color: Colors.white, width: 3.0)),
@@ -551,7 +574,7 @@ class _EditProfileState extends State<EditProfile> {
                           fontFamily: 'AvenirLight'),
                       hintText: "Repeat Password",
                     ),
-                    obscureText: true,
+                    obscureText: showConformPassword,
                     controller: _repeatPasswordController,
                     validator: (value) {
                       return _newPasswordController.text == value           //check repeat password previous entered password

@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:econsultent/services/payment-service.dart';
 import 'package:progress_dialog/progress_dialog.dart';
@@ -11,9 +14,9 @@ import 'notification.dart';
 
 class PaymentPage extends StatefulWidget {
   String meetingId ;
-  PaymentPage({this.meetingId});
+  String _cardNo, _exp, _vcc;
 
-//  PaymentPage({Key key}) : super(key: key);
+  PaymentPage({this.meetingId});
 
   @override
   PaymentPageState createState() => PaymentPageState();
@@ -56,7 +59,6 @@ class PaymentPageState extends State<PaymentPage> {
         payViaNewCard(context);
         break;
       case 1:
-       // Navigator.pushNamed(context, '/existing-cards');
         Navigator.push(context, MaterialPageRoute(builder: (context)=> ExistingCardsPage(meetingId: widget.meetingId,)));
         print(widget.meetingId);
         break;
@@ -67,16 +69,175 @@ class PaymentPageState extends State<PaymentPage> {
     ProgressDialog dialog = new ProgressDialog(context);
     dialog.style(message: 'Please wait...');
     await dialog.show();
-    var response = await StripeService.payWithNewCard(
-      amount: payAmount.toString(),
-    );
     await dialog.hide();
-    Scaffold.of(context).showSnackBar(SnackBar(
-      content: Text(response.message),
-      duration:
-      new Duration(milliseconds: response.success == true ? 1200 : 3000),
-    ));
+    createAlertDialog(context);
   }
+
+  createAlertDialog(BuildContext context){
+    TextEditingController customController = TextEditingController();
+    return showDialog(context: context, builder: (context){
+        return AlertDialog(
+          content: Container(
+          height: 290,
+          child: Column(
+          children: <Widget>[
+          Container(
+          child: Form(
+
+            key: _formKey,
+            child: Column(
+              children: <Widget>[
+                SizedBox( height: 15, ),
+                cardNo(),
+                SizedBox( height: 15, ),
+                exp(),
+                SizedBox( height: 15, ),
+                vcc(),
+              ],
+            ),
+          ),
+          ),
+          ],
+          ),
+          ),
+
+          actions: <Widget>[
+            MaterialButton(
+              elevation: 5.0,
+              child: Text('Save'),
+              onPressed: () async {
+                await save();
+                Navigator.of(context).pop(customController.text.toString());
+              },
+            )
+          ],
+        );
+    });
+  }
+
+  /// ******************************************
+  Widget cardNo(){
+    return Container(
+
+      child: TextFormField(
+          validator: (input) {
+            if(input.isEmpty){
+              return 'Card no cannot be empty';
+            }
+          },
+
+          decoration: InputDecoration(
+            labelText: 'Card No',
+            hintText: '4242424242424242',
+            border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(20.0)
+            ),
+            prefixIcon: Icon( Icons.credit_card ),
+          ),
+
+          onChanged: (val) {
+            _cardNo = val;
+          }
+      ),
+    );
+  }
+
+  Widget exp(){
+    return Container(
+
+      child: TextFormField(
+          validator: (input) {
+            if(input.isEmpty){
+              return 'EXP date cannot be empty';
+            }
+          },
+
+          decoration: InputDecoration(
+            labelText: 'EXP Date',
+            hintText: '05/25',
+            border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(20.0)
+            ),
+            prefixIcon: Icon( Icons.calendar_today ),
+          ),
+
+          onChanged: (val) {
+                  _exp = val;
+          }
+      ),
+    );
+  }
+
+  Widget vcc(){
+    return Container(
+
+      child: TextFormField(
+        //  controller: _passwordController,
+          validator: (input) {
+            if(input.isEmpty){
+              return 'VCC cannot be empty';
+            }
+          },
+
+          decoration: InputDecoration(
+            labelText: 'VCC',
+            hintText: '222',
+            border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(20.0)
+            ),
+            prefixIcon: Icon( Icons.lock_outline_rounded ),
+          ),
+
+          onChanged: (val) {
+                  _cvv = val;
+          }
+      ),
+    );
+  }
+  /// *************Popup form****************
+
+  /// *****GET GENERAL USER DETAILS*******
+  DatabaseReference _ref;
+  String name;
+  /// ******************************************************
+  /// Map user data
+  /// ******************************************************
+  getUserDetail() async{
+    await getUserID();
+    _ref = FirebaseDatabase.instance.reference().child('general_user');
+    DataSnapshot snapshot = await _ref.child(cid).once();
+
+    Map general_user = snapshot.value;
+    name = general_user['name'];
+  }
+  /// *****Map user data*******
+  String _cardNo, _exp, _cvv;
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>( );
+  final FirebaseDatabase database = FirebaseDatabase.instance;
+  save() async{
+    if (_formKey.currentState.validate( )) {
+      await getUserDetail();
+        database.reference().child("general_user").
+        child(cid).child("card").child(CreateCryptoRandomString()).set({
+          "cardHolderName" : name,
+          "cardNumber" : _cardNo,
+          'cvvCode' : _cvv,
+          "expiryDate" : _exp,
+          "showBackView" : false,
+        });
+    }
+  }
+
+
+  /// ******************************************************
+  /// create a random number
+  /// ******************************************************
+  String CreateCryptoRandomString([int length = 8]) {
+    final Random _random = Random.secure();
+    var values = List<int>.generate(length, (i) => _random.nextInt(256));
+    return base64Url.encode(values);
+  }
+  ///*********create a random number***********************
 
   @override
   void initState() {

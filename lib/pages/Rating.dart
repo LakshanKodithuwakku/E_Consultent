@@ -17,6 +17,33 @@ class RatingsPage extends StatefulWidget {
 
 class _RatingsPage extends State<RatingsPage>{
 
+
+  /// **********************************************
+  /// empty error popup
+  /// **********************************************
+  showError1() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+
+            title: Text( 'ERROR' ),
+            content: Text( 'You should give a rating before submitting!' ),
+
+            actions: <Widget>[
+              FlatButton(
+
+                  onPressed: () {
+                    Navigator.of( context ).pop( );
+                  },
+                  child: Text( 'OK' ) )
+            ],
+          );
+        }
+    );
+  }
+
+
   /// **************************************
   /// GET GENERAL USER DETAILS
   /// **************************************
@@ -252,10 +279,13 @@ class _RatingsPage extends State<RatingsPage>{
 
           /// Add to database
           onTap: () => {
-            _incrementCounter(),
-            getUser(),
-         //   processCreatingAvgRating(),
-          Navigator.push(context, MaterialPageRoute(builder: (context)=> Detail())),
+            if(_currentRating>0){
+              _incrementCounter(),
+              //   processCreatingAvgRating(),
+              Navigator.push(context, MaterialPageRoute(builder: (context)=> Detail())),
+            }else{
+              showError1()
+            }
           },
 
           child: Container(
@@ -279,6 +309,9 @@ class _RatingsPage extends State<RatingsPage>{
 
 }
 /// ************Submit button*************
+
+
+
 
 /// GLOBEL VERIABLE
 int _currentRating = 0;
@@ -316,7 +349,6 @@ class _Rating extends State<Rating>{
             setState(() {
               _currentRating = index + 1;
             });
-            print(_currentRating);
             this.widget.onRatingSelected(_currentRating);
           }
       );

@@ -7,6 +7,8 @@ import 'package:econsultent/pages/Booking.dart';
 import 'package:econsultent/pages/Rating.dart';
 import 'package:econsultent/pages/Home.dart';
 
+import 'loading.dart';
+
 class Detail extends StatefulWidget {
 
   String consultantKey ;
@@ -36,18 +38,26 @@ class Constants{
 
 class _DetailState extends State<Detail> {
 
+  bool _loading = true;
+
   DatabaseReference _ref;
   @override
   void initState(){
     super.initState();
-   // _ref = FirebaseDatabase.instance.reference().child('Consultants');
-    getConsultantDetail();
+    getData();
   }
+
+  Future<void> getData() async {
+    await getConsultantDetail();
+    setState(() {
+      _loading = false;
+    });
+  }
+
 
   getConsultantDetail() async{
     _ref = FirebaseDatabase.instance.reference().child('Consultants');
     DataSnapshot snapshot = await _ref.child(widget.consultantKey).once();
-
     Map Consultants = snapshot.value;
     fname = Consultants['firstName'];
     lname = Consultants['secondName'];
@@ -66,7 +76,10 @@ class _DetailState extends State<Detail> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return _loading
+        ? Loading()
+        :
+      Scaffold(
       appBar: _buildAppBar(),
       body: SingleChildScrollView(
         physics: BouncingScrollPhysics(),

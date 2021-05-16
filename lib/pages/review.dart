@@ -5,6 +5,8 @@ import 'package:econsultent/pages/detail.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
+import 'loading.dart';
+
 class Mod {
   final String key;
   final String name;
@@ -54,7 +56,7 @@ class _ReviewState extends State<Review> {
          );
     ref.onChildAdded.listen(_onEntryAdded); //
     ref.onChildChanged.listen(_onEntryChanged);
-    _loading = false;
+  //  _loading = false;
   }
   //------------------------------------------------
 
@@ -86,9 +88,9 @@ class _ReviewState extends State<Review> {
   //---------------------------------User Interface
   @override
   Widget build(BuildContext context) {
-    return //_loading
-     //   ? Loading()
-     //   :
+    return _loading
+        ? Loading()
+        :
          Scaffold(
             appBar: AppBar(
               backgroundColor: Theme.of(context).scaffoldBackgroundColor,

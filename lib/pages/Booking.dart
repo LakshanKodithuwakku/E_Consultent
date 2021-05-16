@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:econsultent/pages/Home.dart';
 import 'package:econsultent/pages/detail.dart';
 
+import 'loading.dart';
 import 'notification.dart';
 
 
@@ -19,6 +20,8 @@ class MyDropDown extends StatefulWidget {
 }
 String p1,p2,p3,p4,p5,p6,fname,lname;
 class _MyDropDownState extends State<MyDropDown>{
+  bool _loading = true;
+
   /// *******************************************************
   /// GET PRICE DETAILS
   /// *******************************************************
@@ -30,9 +33,18 @@ class _MyDropDownState extends State<MyDropDown>{
     this.getUser( );
     pickedDate = DateTime.now( );
     time = TimeOfDay.now( );
-    _ref = FirebaseDatabase.instance.reference( ).child( 'Price' );
-    getPrice( );
-    getConsultantDetail();
+   // _ref = FirebaseDatabase.instance.reference( ).child( 'Price' );
+   // getPrice( );
+   // getConsultantDetail();
+    getData();
+  }
+
+  Future<void> getData() async {
+    await getConsultantDetail();
+    await getPrice( );
+    setState(() {
+      _loading = false;
+    });
   }
 
   getConsultantDetail() async{
@@ -46,6 +58,7 @@ class _MyDropDownState extends State<MyDropDown>{
   }
 
   getPrice() async{
+    _ref = FirebaseDatabase.instance.reference( ).child( 'Price' );
     DataSnapshot snapshot = await _ref.once();
     Map Price = snapshot.value;
     p1 = Price['Video-Quick'];
@@ -71,7 +84,9 @@ class _MyDropDownState extends State<MyDropDown>{
   /// **********************************************
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return _loading
+        ? Loading()
+        :Scaffold(
         appBar: _buildAppBar(),
         body: Container(
           width: double.infinity,

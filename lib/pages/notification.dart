@@ -1,3 +1,4 @@
+import 'package:econsultent/chat/chats_page.dart';
 import 'package:econsultent/pages/paymentHome.dart';
 import 'package:econsultent/pages/videochat/index.dart';
 import 'package:econsultent/pages/videochat/meeting.dart';
@@ -305,7 +306,7 @@ class _NotificationsState extends State<Notifications> {
                                       mainAxisAlignment: MainAxisAlignment.end,
 
                                       children: [
-                                        verify("${booking['pay']}", "${booking['accepeted']}", "${booking['key']}"),
+                                        verify("${booking['pay']}", "${booking['accepeted']}", "${booking['key']}", "${booking['selectedtype']}", "${booking['consultentName']}", "${booking['consultentId']}"),
                                       ],
                                     )
                                   ],
@@ -324,7 +325,7 @@ class _NotificationsState extends State<Notifications> {
   }
 
   /////////////////////////////////////////////////////////////////////////////////////
-  Widget verify(String p, String v, String ID){
+  Widget verify(String p, String v, String ID, String type, String name, String cid){
     if( v == 'true' && p != 'true') {
       return
           RaisedButton(
@@ -333,8 +334,8 @@ class _NotificationsState extends State<Notifications> {
                 borderRadius:
                 BorderRadius.circular( 20 ) ),
             onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_)=> PaymentPage(meetingId:ID,),));
-              print(ID);
+                Navigator.push(context, MaterialPageRoute(builder: (_)=> PaymentPage(meetingId:ID,),));
+                print(ID);
             },
             child: Text( "Pay",
                 style: TextStyle(
@@ -349,7 +350,20 @@ class _NotificationsState extends State<Notifications> {
             borderRadius:
             BorderRadius.circular(20)),
         onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context)=>IndexPage(),));
+          if(type == "Video"){
+            Navigator.push(context, MaterialPageRoute(builder: (context)=>IndexPage(),));
+          }else if(type == "Text chat"){
+            Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder:
+                      (BuildContext context)=>
+                      ChatsPage(
+                        meetingId:ID,
+                        receiverName: name,
+                        receiverId: cid,
+                        myId: id,
+                      ),));
+          }
         },
         child: Text("Join Meeting",
             style: TextStyle(

@@ -1,3 +1,4 @@
+import 'package:econsultent/pages/Home.dart';
 import 'package:econsultent/pages/detail.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -5,6 +6,7 @@ import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_credit_card/credit_card_widget.dart';
 import 'package:econsultent/services/payment-service.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:stripe_payment/stripe_payment.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 
@@ -12,7 +14,7 @@ class ExistingCardsPage extends StatefulWidget {
   String meetingId;
   ExistingCardsPage({this.meetingId});
 
- // ExistingCardsPage({Key key}) : super(key: key);
+  //ExistingCardsPage({Key key}) : super(key: key);/////////////////////////////////////////////
 
   @override
   ExistingCardsPageState createState() => ExistingCardsPageState();
@@ -66,19 +68,9 @@ class ExistingCardsPageState extends State<ExistingCardsPage> {
       card: stripeCard
     );
     await dialog.hide();
-    Scaffold.of(context).showSnackBar(
-        SnackBar(
-          content: Text(response.message),
-          duration: new Duration(milliseconds: 1200),
-        )
-      ).closed.then((_) {
-        Navigator.pop(context);
-        print(widget.meetingId);
-        print(id);
-        print("chiku");
-
-      //  _savePrice();////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-      });
+    await transaction();
+    Navigator.push(context, MaterialPageRoute(builder: (context)=> HomePage()));
+    _savePrice();////////////////////////////////////////////////////////////////////////////////////
   }
 
   @override
@@ -170,5 +162,13 @@ class ExistingCardsPageState extends State<ExistingCardsPage> {
   }
 /// ****************SEND TO DATABASE*****************
 
+
+  /// ***********************************************
+  /// su
+  /// ***********************************************
+  void transaction() async {
+    Fluttertoast.showToast(
+        msg: "Transaction successful!");
+  }
 
 }
