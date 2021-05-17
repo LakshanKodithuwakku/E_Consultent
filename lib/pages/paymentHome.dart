@@ -14,7 +14,7 @@ import 'notification.dart';
 
 class PaymentPage extends StatefulWidget {
   String meetingId ;
-  String _cardNo, _exp, _vcc;
+  String _cardNo, _exp, _cvv;
 
   PaymentPage({this.meetingId});
 
@@ -179,14 +179,14 @@ class PaymentPageState extends State<PaymentPage> {
         //  controller: _passwordController,
           validator: (input) {
             if(input.isEmpty){
-              return 'VCC cannot be empty';
+              return 'CVV cannot be empty';
             }/*else if(input.length==3){
               return 'Enter valid VCC';
             }*/
           },
 
           decoration: InputDecoration(
-            labelText: 'VCC',
+            labelText: 'CVV',
             hintText: '222',
             border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(20.0)
@@ -195,7 +195,7 @@ class PaymentPageState extends State<PaymentPage> {
           ),
 
           onChanged: (val) {
-                  _vcc = val;
+                  _cvv = val;
           }
       ),
     );
@@ -218,7 +218,7 @@ class PaymentPageState extends State<PaymentPage> {
   }
   /// *****Map user data*******
 
-  String _cardNo, _exp, _vcc;
+  String _cardNo, _exp, _cvv;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>( );
   final FirebaseDatabase database = FirebaseDatabase.instance;
   save() async{
@@ -228,7 +228,7 @@ class PaymentPageState extends State<PaymentPage> {
         child(cid).child("card").child(CreateCryptoRandomString()).set({
           "cardHolderName" : name,
           "cardNumber" : _cardNo,
-          'cvvCode' : _vcc,
+          'cvvCode' : _cvv,
           "expiryDate" : _exp,
           "showBackView" : false,
         });
