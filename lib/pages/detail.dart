@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:math';
+
 import 'package:econsultent/pages/review.dart';
 import 'package:econsultent/utils/he_color.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -20,7 +23,7 @@ class Detail extends StatefulWidget {
 
 String fname,lname,field,rating,country,proPic, description,consultentId;
 bool verified;
-String l1,l2,l3;
+String l1,l2,l3, name;
 int _no=0;
 List<String> myList = List<String>(3);
 
@@ -480,7 +483,7 @@ class _MultiSelectDialogState<V> extends State<MultiSelectDialog<V>> {
 
   void _onSubmitTap() {
     _incrementCounter();
-  //  Navigator.pop( context, _selectedValues );
+   // Navigator.pop( context, _selectedValues );
 
   }
 
@@ -533,14 +536,44 @@ class _MultiSelectDialogState<V> extends State<MultiSelectDialog<V>> {
   //------------------------------------------------------
 
   /// ******************************************************
+  /// create a random number
+  /// ******************************************************
+  String CreateCryptoRandomString([int length = 8]) {
+    final Random _random = Random.secure();
+    var values = List<int>.generate(length, (i) => _random.nextInt(256));
+    return base64Url.encode(values);
+  }
+  ///*********create a random number***********************
+
+  /// ******************************************************
+  /// Map user data
+  /// ******************************************************
+  DatabaseReference _ref;
+  String proPicURL, name;
+
+  getUserDetail() async{
+    await getUserID();
+    _ref = FirebaseDatabase.instance.reference().child('general_user');
+    DataSnapshot snapshot = await _ref.child("${user.uid}").once();
+
+    Map general_user = snapshot.value;
+    name = general_user['name'];
+  }
+  /// *****Map user data*******
+
+  /// ******************************************************
   /// SEND TO DATABASE
   /// ******************************************************
   final FirebaseDatabase database = FirebaseDatabase.instance;
-  void _incrementCounter(){
+  Future<void> _incrementCounter() async {
+    await getUserID();
+    await getUserDetail();
     database.reference().child("Report").
-    child(consultentId).child(_no.toString()).set({
+    child(consultentId).child(CreateCryptoRandomString()).set({
       "General_User_Id" : id,
-     "Reason" : myList[0] +" "+ myList[1] +" "+ myList[2]
+      "Reporter" : name,
+      "Consultent" : fname+" "+ lname,
+     "Reason" : myList[0] + myList[1] + myList[2]
     });
     _no++;
     myList[0]="";

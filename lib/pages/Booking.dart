@@ -88,9 +88,10 @@ class _MyDropDownState extends State<MyDropDown>{
         ? Loading()
         :Scaffold(
         appBar: _buildAppBar(),
-        body: Container(
-          width: double.infinity,
-          height: double.infinity,
+        body: //Container(
+        SingleChildScrollView(
+         // width: double.infinity,
+         // height: double.infinity,
           padding: EdgeInsets.all(32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,

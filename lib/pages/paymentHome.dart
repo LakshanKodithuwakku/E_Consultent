@@ -77,8 +77,8 @@ class PaymentPageState extends State<PaymentPage> {
     TextEditingController customController = TextEditingController();
     return showDialog(context: context, builder: (context){
         return AlertDialog(
-          content: Container(
-          height: 290,
+          content: SingleChildScrollView(
+         // height: 290,
           child: Column(
           children: <Widget>[
           Container(
@@ -123,7 +123,9 @@ class PaymentPageState extends State<PaymentPage> {
           validator: (input) {
             if(input.isEmpty){
               return 'Card no cannot be empty';
-            }
+            }/*else if(input.length==16){
+              return 'Enter valid Card No';
+            }*/
           },
 
           decoration: InputDecoration(
@@ -149,7 +151,9 @@ class PaymentPageState extends State<PaymentPage> {
           validator: (input) {
             if(input.isEmpty){
               return 'EXP date cannot be empty';
-            }
+            }/*else if(input.length==5){
+              return 'Enter valid EXP';
+            }*/
           },
 
           decoration: InputDecoration(
@@ -176,7 +180,9 @@ class PaymentPageState extends State<PaymentPage> {
           validator: (input) {
             if(input.isEmpty){
               return 'VCC cannot be empty';
-            }
+            }/*else if(input.length==3){
+              return 'Enter valid VCC';
+            }*/
           },
 
           decoration: InputDecoration(
@@ -189,7 +195,7 @@ class PaymentPageState extends State<PaymentPage> {
           ),
 
           onChanged: (val) {
-                  _cvv = val;
+                  _vcc = val;
           }
       ),
     );
@@ -211,7 +217,8 @@ class PaymentPageState extends State<PaymentPage> {
     name = general_user['name'];
   }
   /// *****Map user data*******
-  String _cardNo, _exp, _cvv;
+
+  String _cardNo, _exp, _vcc;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>( );
   final FirebaseDatabase database = FirebaseDatabase.instance;
   save() async{
@@ -221,7 +228,7 @@ class PaymentPageState extends State<PaymentPage> {
         child(cid).child("card").child(CreateCryptoRandomString()).set({
           "cardHolderName" : name,
           "cardNumber" : _cardNo,
-          'cvvCode' : _cvv,
+          'cvvCode' : _vcc,
           "expiryDate" : _exp,
           "showBackView" : false,
         });
